@@ -27,26 +27,26 @@ class JwtAuthFilter(
 			return
 		}
 
-         try {
-             val token = authHeader.substring(7)
-             val username = jwtService.extractUsername(token)
+		try {
+			val token = authHeader.substring(7)
+			val username = jwtService.extractUsername(token)
 
-             if (SecurityContextHolder.getContext().authentication == null) {
-                 val userDetails = userDetailsService.loadUserByUsername(username)
+			if (SecurityContextHolder.getContext().authentication == null) {
+				val userDetails = userDetailsService.loadUserByUsername(username)
 
-                 if (jwtService.validateToken(token, userDetails)) {
-                     val authToken = UsernamePasswordAuthenticationToken(
-						 userDetails,
-						 null,
-						 userDetails.authorities
-					 )
-                     authToken.details = WebAuthenticationDetailsSource().buildDetails(request)
-                     SecurityContextHolder.getContext().authentication = authToken
-                 }
-             }
-         } catch (e: Exception) {
-             logger.error("Error processing JWT token: ${e.message}")
-         }
+				if (jwtService.validateToken(token, userDetails)) {
+					val authToken = UsernamePasswordAuthenticationToken(
+						userDetails,
+						null,
+						userDetails.authorities
+					)
+					authToken.details = WebAuthenticationDetailsSource().buildDetails(request)
+					SecurityContextHolder.getContext().authentication = authToken
+				}
+			}
+		} catch (e: Exception) {
+			logger.error("Error processing JWT token: ${e.message}")
+		}
 
         filterChain.doFilter(request, response)
 	}
