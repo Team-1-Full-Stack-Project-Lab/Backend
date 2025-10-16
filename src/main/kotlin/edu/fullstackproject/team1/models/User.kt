@@ -22,10 +22,10 @@ data class User(
 	val email: String,
 
 	@Column(nullable = false)
-	val firstName: String,
+	var firstName: String,
 
 	@Column(nullable = false)
-	val lastName: String,
+	var lastName: String,
 
 	@Column(nullable = false)
 	private val password: String,
