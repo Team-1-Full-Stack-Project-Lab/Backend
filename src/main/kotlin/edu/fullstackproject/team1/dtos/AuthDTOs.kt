@@ -31,16 +31,5 @@ data class RegisterRequest(
 )
 
 data class AuthResponse(
-	@field:NotBlank
 	val token: String
 )
-data class UserProfileDto(
-	val firstName: String,
-	val lastName: String,
-	val email: String
-)
-data class UserUpdateRequestDto(
-	val firstName: String,
-	val lastName: String
-)
-
