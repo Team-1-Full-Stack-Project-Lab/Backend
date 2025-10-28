@@ -7,6 +7,7 @@ import edu.fullstackproject.team1.models.Trip
 import edu.fullstackproject.team1.repositories.CityRepository
 import edu.fullstackproject.team1.repositories.TripRepository
 import edu.fullstackproject.team1.repositories.UserRepository
+import jakarta.validation.constraints.Email
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.web.server.ResponseStatusException
@@ -43,6 +44,19 @@ class TripService (
 		return TripsListResponse(
 			trips = trips.map { mapToTripResponse(it) }
 		)
+	}
+
+	//DELETE
+	fun deleteTrip(userEmail: String, tripID: Long){
+		val trip = tripRepository.findById(tripID)
+			.orElseThrow{ ResponseStatusException(
+				HttpStatus.NOT_FOUND, "User not found") }
+		val ownerEmail = trip.user.email
+		if(ownerEmail != userEmail){
+			throw ResponseStatusException(
+				HttpStatus.FORBIDDEN, "User not found")
+		}
+		tripRepository.delete(trip)
 	}
 
 	private fun validateTripDates(startDate: LocalDate, endDate: LocalDate) {
