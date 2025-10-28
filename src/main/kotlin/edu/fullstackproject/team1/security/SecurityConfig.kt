@@ -27,7 +27,7 @@ class SecurityConfig(
 			.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter::class.java)
 			.authorizeHttpRequests { requests ->
 				requests
-					.requestMatchers("/user/profile/**")
+					.requestMatchers("/user/profile/**", "/trips/itineraries/**")
 					.authenticated()
 					.anyRequest()
 					.permitAll()
