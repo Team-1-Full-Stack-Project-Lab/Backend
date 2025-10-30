@@ -3,6 +3,8 @@ package edu.fullstackproject.team1.controllers
 import edu.fullstackproject.team1.dtos.CreateTripRequest
 import edu.fullstackproject.team1.dtos.TripResponse
 import edu.fullstackproject.team1.dtos.TripsListResponse
+import edu.fullstackproject.team1.dtos.UpdateTripRequest
+import edu.fullstackproject.team1.services.CityService
 import edu.fullstackproject.team1.services.TripService
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
@@ -13,6 +15,7 @@ import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
+import org.springframework.web.bind.annotation.PutMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
@@ -20,7 +23,8 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping("/trips")
 class TripController(
-	val tripService: TripService
+	val tripService: TripService,
+	val cityService: CityService,
 ) {
 	@PostMapping("/itineraries")
 	fun createItinerary(
@@ -47,5 +51,16 @@ class TripController(
 	): ResponseEntity<Map<String,String>>{
 		tripService.deleteTrip(user.username, id)
 		return ResponseEntity.ok(mapOf("message" to "Itineraries deleted successfully"))
+	}
+
+	//UPDATE
+	@PutMapping("/itineraries/{id}")
+	fun updateItinerary(
+		@AuthenticationPrincipal user: UserDetails,
+		@PathVariable id: Long,
+		@RequestBody @Valid request: UpdateTripRequest
+	): ResponseEntity<TripResponse> {
+		val response = tripService.updateTrip(user.username, id, request)
+		return ResponseEntity.ok(response)
 	}
 }
