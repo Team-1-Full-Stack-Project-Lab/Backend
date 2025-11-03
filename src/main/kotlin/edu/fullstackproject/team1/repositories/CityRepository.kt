@@ -50,14 +50,14 @@ interface CityRepository : JpaRepository<City, Long> {
         LEFT JOIN FETCH c.state s
         WHERE (:countryId IS NULL OR c.country.id = :countryId)
         AND (:stateId IS NULL OR c.state.id = :stateId)
-        AND (:search IS NULL OR LOWER(c.name) LIKE LOWER(CONCAT('%', :search, '%')))
+        AND (COALESCE(:search, '') = '' OR LOWER(c.name) LIKE LOWER(CONCAT('%', :search, '%')))
         AND (:featured IS NULL OR c.isFeatured = :featured)
         ORDER BY c.isFeatured DESC, c.name
     """, countQuery = """
 		SELECT COUNT(c) FROM City c
 		WHERE (:countryId IS NULL OR c.country.id = :countryId)
 		AND (:stateId IS NULL OR c.state.id = :stateId)
-		AND (:search IS NULL OR LOWER(c.name) LIKE LOWER(CONCAT('%', :search, '%')))
+		AND (COALESCE(:search, '') = '' OR LOWER(c.name) LIKE LOWER(CONCAT('%', :search, '%')))
 		AND (:featured IS NULL OR c.isFeatured = :featured)
 	""")
 	fun searchCitiesWithCountryAndState(
