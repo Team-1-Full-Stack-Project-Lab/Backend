@@ -14,12 +14,16 @@ interface CountryRepository : JpaRepository<Country, Long> {
 
 	fun findByNameContainingIgnoreCase(name: String): List<Country>
 
-	@Query("""
+	@Query(
+		"""
 		SELECT DISTINCT c FROM Country c
         LEFT JOIN FETCH c.region r
 		LEFT JOIN FETCH c.cities ci
 		LEFT JOIN FETCH ci.state s
 		WHERE c.id = :id
-	""")
-	fun findByIdWithRegionCitiesAndStates(@Param("id") id: Long): Country?
+	""",
+	)
+	fun findByIdWithRegionCitiesAndStates(
+		@Param("id") id: Long,
+	): Country?
 }

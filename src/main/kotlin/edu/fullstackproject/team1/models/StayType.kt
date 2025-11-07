@@ -18,18 +18,14 @@ data class StayType(
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	val id: Long? = null,
-
 	@Column(nullable = false, length = 100)
 	val name: String,
-
 	@CreationTimestamp
 	@Column(nullable = false)
 	val createdAt: Instant? = null,
-
 	@UpdateTimestamp
 	@Column(nullable = false)
 	val updatedAt: Instant? = null,
-
 	@OneToMany(mappedBy = "stayType", fetch = FetchType.LAZY)
-	val stays: List<Stay> = emptyList()
+	val stays: List<Stay> = emptyList(),
 )

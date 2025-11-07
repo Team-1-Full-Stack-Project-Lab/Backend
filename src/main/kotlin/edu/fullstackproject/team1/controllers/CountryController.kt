@@ -12,17 +12,21 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping("/countries")
 class CountryController(
-	private val countryService: CountryService
+	private val countryService: CountryService,
 ) {
 	@GetMapping
-	fun getCountries(@RequestParam(required = false) name: String?): ResponseEntity<List<CountryResponse>> {
+	fun getCountries(
+		@RequestParam(required = false) name: String?,
+	): ResponseEntity<List<CountryResponse>> {
 		val countries = if (name != null) countryService.getCountriesByName(name) else countryService.getAllCountries()
 
 		return ResponseEntity.ok(countries)
 	}
 
 	@GetMapping("/{id}")
-	fun getCountryById(@PathVariable id: Long): ResponseEntity<CountryResponse> {
+	fun getCountryById(
+		@PathVariable id: Long,
+	): ResponseEntity<CountryResponse> {
 		val country = countryService.getCountryById(id)
 
 		return ResponseEntity.ok(country)

@@ -13,5 +13,5 @@ data class CountryResponse(
 	val currencySymbol: String?,
 	val region: RegionResponse?,
 	val states: List<StateResponse>?,
-	val cities: List<CityResponse>?
+	val cities: List<CityResponse>?,
 )

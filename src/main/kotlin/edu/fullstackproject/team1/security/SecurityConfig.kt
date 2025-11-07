@@ -13,13 +13,13 @@ import org.springframework.web.filter.CorsFilter
 @EnableWebSecurity
 class SecurityConfig(
 	private val corsFilter: CorsFilter,
-	private val jwtAuthFilter: JwtAuthFilter
+	private val jwtAuthFilter: JwtAuthFilter,
 ) {
 	@Bean
-	fun filterChain(http: HttpSecurity): SecurityFilterChain {
-		return http
+	fun filterChain(http: HttpSecurity): SecurityFilterChain =
+		http
 			.cors { }
-			.csrf{ csrf -> csrf.disable() }
+			.csrf { csrf -> csrf.disable() }
 			.sessionManagement { session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS) }
 			.formLogin { form -> form.disable() }
 			.httpBasic { basic -> basic.disable() }
@@ -31,7 +31,5 @@ class SecurityConfig(
 					.authenticated()
 					.anyRequest()
 					.permitAll()
-			}
-			.build()
-	}
+			}.build()
 }

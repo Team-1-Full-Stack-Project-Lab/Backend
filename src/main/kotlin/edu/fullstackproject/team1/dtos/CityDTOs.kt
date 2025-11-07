@@ -15,5 +15,5 @@ data class CityResponse(
 	val googlePlaceId: String?,
 	val population: Int?,
 	val isCapital: Boolean,
-	val isFeatured: Boolean
+	val isFeatured: Boolean,
 )

@@ -8,10 +8,14 @@ import org.springframework.stereotype.Repository
 
 @Repository
 interface StayServiceRepository : JpaRepository<StayService, Long> {
-	@Query("""
+	@Query(
+		"""
         SELECT ss FROM StayService ss
         JOIN FETCH ss.service s
         WHERE ss.stay.id = :stayId
-    """)
-	fun findByStayIdWithService(@Param("stayId") stayId: Long): List<StayService>
+    """,
+	)
+	fun findByStayIdWithService(
+		@Param("stayId") stayId: Long,
+	): List<StayService>
 }

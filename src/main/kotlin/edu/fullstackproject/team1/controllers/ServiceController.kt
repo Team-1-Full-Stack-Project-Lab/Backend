@@ -12,20 +12,25 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping("/services")
 class ServiceController(
-	private val serviceService: ServiceService
+	private val serviceService: ServiceService,
 ) {
 	@GetMapping
-	fun getAllServices(@RequestParam(required = false) name: String?): ResponseEntity<List<ServiceResponse>> {
-		val services = if (name != null) {
-			serviceService.getServicesByName(name)
-		} else {
-			serviceService.getAllServices()
-		}
+	fun getAllServices(
+		@RequestParam(required = false) name: String?,
+	): ResponseEntity<List<ServiceResponse>> {
+		val services =
+			if (name != null) {
+				serviceService.getServicesByName(name)
+			} else {
+				serviceService.getAllServices()
+			}
 		return ResponseEntity.ok(services)
 	}
 
 	@GetMapping("/{id}")
-	fun getServiceById(@PathVariable id: Long): ResponseEntity<ServiceResponse> {
+	fun getServiceById(
+		@PathVariable id: Long,
+	): ResponseEntity<ServiceResponse> {
 		val service = serviceService.getServiceById(id)
 		return ResponseEntity.ok(service)
 	}

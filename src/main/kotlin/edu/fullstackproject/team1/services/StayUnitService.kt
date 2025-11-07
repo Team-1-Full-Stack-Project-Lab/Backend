@@ -10,7 +10,7 @@ import java.math.BigDecimal
 
 @Service
 class StayUnitService(
-	private val stayUnitRepository: StayUnitRepository
+	private val stayUnitRepository: StayUnitRepository,
 ) {
 	fun getStayUnitsByStayId(stayId: Long): List<StayUnitResponse> {
 		val units = stayUnitRepository.findByStayId(stayId)
@@ -18,29 +18,30 @@ class StayUnitService(
 	}
 
 	fun getStayUnitById(id: Long): StayUnitResponse {
-		val unit = stayUnitRepository.findById(id)
-			.orElseThrow { ResponseStatusException(HttpStatus.NOT_FOUND, "Stay unit not found") }
+		val unit =
+			stayUnitRepository
+				.findById(id)
+				.orElseThrow { ResponseStatusException(HttpStatus.NOT_FOUND, "Stay unit not found") }
 		return mapToStayUnitResponse(unit)
 	}
 
 	fun searchAvailableUnits(
 		stayId: Long,
 		minCapacity: Int,
-		maxPrice: BigDecimal
+		maxPrice: BigDecimal,
 	): List<StayUnitResponse> {
 		val units = stayUnitRepository.findAvailableUnits(stayId, minCapacity, maxPrice)
 		return units.map { mapToStayUnitResponse(it) }
 	}
 
-	private fun mapToStayUnitResponse(unit: StayUnit): StayUnitResponse {
-		return StayUnitResponse(
+	private fun mapToStayUnitResponse(unit: StayUnit): StayUnitResponse =
+		StayUnitResponse(
 			id = unit.id,
 			stayNumber = unit.stayNumber,
 			numberOfBeds = unit.numberOfBeds,
 			capacity = unit.capacity,
 			pricePerNight = unit.pricePerNight,
 			roomType = unit.roomType,
-			stay = null
+			stay = null,
 		)
-	}
 }

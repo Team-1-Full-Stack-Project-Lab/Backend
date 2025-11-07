@@ -12,20 +12,25 @@ import org.springframework.web.bind.annotation.RestController
 @RestController
 @RequestMapping("/stay-types")
 class StayTypeController(
-	private val stayTypeService: StayTypeService
+	private val stayTypeService: StayTypeService,
 ) {
 	@GetMapping
-	fun getAllStayTypes(@RequestParam(required = false) name: String?): ResponseEntity<List<StayTypeResponse>> {
-		val stayTypes = if (name != null) {
-			stayTypeService.getStayTypesByName(name)
-		} else {
-			stayTypeService.getAllStayTypes()
-		}
+	fun getAllStayTypes(
+		@RequestParam(required = false) name: String?,
+	): ResponseEntity<List<StayTypeResponse>> {
+		val stayTypes =
+			if (name != null) {
+				stayTypeService.getStayTypesByName(name)
+			} else {
+				stayTypeService.getAllStayTypes()
+			}
 		return ResponseEntity.ok(stayTypes)
 	}
 
 	@GetMapping("/{id}")
-	fun getStayTypeById(@PathVariable id: Long): ResponseEntity<StayTypeResponse> {
+	fun getStayTypeById(
+		@PathVariable id: Long,
+	): ResponseEntity<StayTypeResponse> {
 		val stayType = stayTypeService.getStayTypeById(id)
 		return ResponseEntity.ok(stayType)
 	}

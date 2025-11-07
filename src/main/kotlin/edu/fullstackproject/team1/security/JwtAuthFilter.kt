@@ -14,12 +14,12 @@ import org.springframework.web.filter.OncePerRequestFilter
 @Component
 class JwtAuthFilter(
 	private val jwtService: JwtService,
-	private val userDetailsService: UserDetailsService
-): OncePerRequestFilter() {
+	private val userDetailsService: UserDetailsService,
+) : OncePerRequestFilter() {
 	override fun doFilterInternal(
 		request: HttpServletRequest,
 		response: HttpServletResponse,
-		filterChain: FilterChain
+		filterChain: FilterChain,
 	) {
 		val authHeader = request.getHeader("Authorization")
 		if (authHeader == null || !authHeader.startsWith("Bearer ")) {
@@ -35,11 +35,12 @@ class JwtAuthFilter(
 				val userDetails = userDetailsService.loadUserByUsername(username)
 
 				if (jwtService.validateToken(token, userDetails)) {
-					val authToken = UsernamePasswordAuthenticationToken(
-						userDetails,
-						null,
-						userDetails.authorities
-					)
+					val authToken =
+						UsernamePasswordAuthenticationToken(
+							userDetails,
+							null,
+							userDetails.authorities,
+						)
 					authToken.details = WebAuthenticationDetailsSource().buildDetails(request)
 					SecurityContextHolder.getContext().authentication = authToken
 				}
@@ -48,6 +49,6 @@ class JwtAuthFilter(
 			logger.error("Error processing JWT token: ${e.message}")
 		}
 
-        filterChain.doFilter(request, response)
+		filterChain.doFilter(request, response)
 	}
 }
