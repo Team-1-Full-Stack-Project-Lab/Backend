@@ -1,0 +1,196 @@
+scalar Date
+
+#CITY - COUNTRY - STATE - REGION GRAPHQL SCHEMA
+type City {
+	id: ID!
+	name: String!
+	nameAscii: String
+	latitude: Float!
+	longitude: Float!
+	timezone: String
+	googlePlaceId: String
+	population: Int
+	isCapital: Boolean!
+	isFeatured: Boolean!
+	country: Country!
+	state: State
+}
+type Country{
+	id: ID!
+	name: String!
+	iso2Code: String!
+	iso3Code: String!
+	phoneCode: String
+	currencyCode: String
+	currencySymbol: String
+	region: Region
+	states: [StateResponse!]
+	cities: [CityResponse!]
+}
+type State{
+	id: ID!
+	name: String!
+	code: String
+	latitude: Float
+	longitude: Float
+	country: CountryResponse!
+}
+type Region {
+	id: ID!
+	name: String!
+	code: String
+}
+
+#CITY - COUNTRY - STATE - REGION RESPONSES
+type CityResponse {
+	id: ID!
+	name: String!
+	nameAscii: String
+	latitude: Float!
+	longitude: Float!
+	timezone: String
+	googlePlaceId: String
+	population: Int
+	isCapital: Boolean!
+	isFeatured: Boolean!
+}
+type CityResponseWithCountry {
+	id: ID!
+	name: String!
+	nameAscii: String
+	latitude: Float!
+	longitude: Float!
+	timezone: String
+	googlePlaceId: String
+	population: Int
+	isCapital: Boolean!
+	isFeatured: Boolean!
+	country: CountryResponse!
+	state: StateResponse
+}
+type CountryResponse{
+	id: ID!
+	name: String!
+	iso2Code: String!
+	iso3Code: String!
+	phoneCode: String
+	currencyCode: String
+	currencySymbol: String
+}
+type StateResponse{
+	id: ID!
+	name: String!
+	code: String
+	latitude: Float
+	longitude: Float
+}
+
+#PAGINATION RESPONSE
+type CityPage {
+	content: [CityResponseWithCountry!]!
+	totalElements: Int!
+	totalPages: Int!
+	number: Int!
+	size: Int!
+	first: Boolean!
+	last: Boolean!
+}
+
+#USER TYPES
+type User{
+	email: String!
+	firstName: String!
+	lastName: String!
+}
+#USER INPUT TYPES
+input UserUpdateRequestGraphQL {
+	firstName: String!
+	lastName: String!
+}
+input LoginRequest {
+	email: String!
+	password: String!
+}
+input RegisterRequest {
+	email: String!
+	firstName: String!
+	lastName: String!
+	password: String!
+}
+#AUTH TYPES
+type Auth {
+	token: String!
+}
+type DeleteUserResponse {
+	success: Boolean!
+	message: String!
+}
+
+#TRIPS TYPES AND RESPONSES
+type Trip {
+	id: ID!
+	name: String!
+	cityId: ID!
+	cityName: String!
+	countryName: String!
+	startDate: Date!
+	finishDate: Date!
+}
+type TripsList {
+	trips: [Trip!]!
+}
+type DeleteItineraryResponse {
+	success: Boolean!
+	message: String!
+}
+#TRIPS INPUTS
+input CreateTripRequest {
+	cityId: ID!
+	startDate: Date!
+	endDate: Date!
+	name: String
+}
+input UpdateTripRequest {
+	name: String
+	cityId: ID
+	startDate: Date
+	endDate: Date
+}
+
+#QUERIES
+type Query {
+	#Get by ID CITY - COUNTRY - STATE - REGION
+	getCityById(id: ID!): CityResponseWithCountry
+	getCountryById(id: ID!): Country
+	getStateById(id: ID!): State
+	getRegionById(id: ID!): Region
+	#Get All or by Name CITY - COUNTRY - STATE - REGION
+	getCountries(name:String):[CountryResponse!]!
+	getStates(name:String): [StateResponse!]!
+	getRegions(name:String): [Region!]!
+	getAllCities(
+		name: String
+		country: ID
+		state: ID
+		featured: Boolean
+		page: Int
+		size: Int
+	): CityPage!
+	#User Queries
+	getUser: User!
+	#Trip Queries
+	getUserItineraries: TripsList!
+}
+#MUTATIONS
+type Mutation {
+	# Auth Mutations
+	login(request: LoginRequest!): Auth!
+	register(request: RegisterRequest!): Auth!
+	# User Mutations
+	updateUser(request: UserUpdateRequestGraphQL!): User!
+	deleteUser: DeleteUserResponse!
+	# Trip Mutations
+	createItinerary(request: CreateTripRequest!): Trip!
+	updateItinerary(id: ID!, request: UpdateTripRequest!): Trip!
+	deleteItinerary(id: ID!): DeleteItineraryResponse!
+}

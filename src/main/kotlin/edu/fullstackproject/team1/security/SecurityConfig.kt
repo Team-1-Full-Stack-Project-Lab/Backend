@@ -29,6 +29,8 @@ class SecurityConfig(
 				requests
 					.requestMatchers("/user/profile/**", "/trips/itineraries/**")
 					.authenticated()
+					.requestMatchers("/graphql", "/graphiql/**")
+					.permitAll()
 					.anyRequest()
 					.permitAll()
 			}

@@ -43,3 +43,7 @@ data class UpdateTripRequest(
 data class TripsListResponse(
 	val trips: List<TripResponse>
 )
+data class DeleteItineraryResponse(
+	val success: Boolean,
+	val message: String,
+)
