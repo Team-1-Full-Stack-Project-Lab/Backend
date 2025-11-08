@@ -54,4 +54,14 @@ interface StayRepository : JpaRepository<Stay, Long> {
 		@Param("radiusKm") radiusKm: Double,
 		pageable: Pageable,
 	): Page<Stay>
+
+	@Query(
+		"""
+	SELECT DISTINCT s FROM Stay s
+	JOIN FETCH s.city c
+	JOIN FETCH s.stayType st
+	""",
+		countQuery = "SELECT COUNT(DISTINCT s) FROM Stay s"
+	)
+	fun findAllWithCityAndType(pageable: Pageable): Page<Stay>
 }

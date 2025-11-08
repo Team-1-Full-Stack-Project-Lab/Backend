@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
 import org.springframework.stereotype.Repository
 import java.math.BigDecimal
+import java.util.Optional
 
 @Repository
 interface StayUnitRepository : JpaRepository<StayUnit, Long> {
@@ -17,6 +18,20 @@ interface StayUnitRepository : JpaRepository<StayUnit, Long> {
     """,
 	)
 	fun findByStayId(
+		@Param("stayId") stayId: Long,
+	): List<StayUnit>
+
+	@Query(
+		"""
+    SELECT su FROM StayUnit su
+    JOIN FETCH su.stay s
+    JOIN FETCH s.city c
+    JOIN FETCH s.stayType st
+    WHERE su.stay.id = :stayId
+    ORDER BY su.pricePerNight
+    """,
+	)
+	fun findByStayIdWithStay(
 		@Param("stayId") stayId: Long,
 	): List<StayUnit>
 
