@@ -11,3 +11,8 @@ data class UserResponse(
 	val firstName: String,
 	val lastName: String,
 )
+
+data class UserUpdateRequestGraphQL(
+	val firstName: String,
+	val lastName: String,
+)
