@@ -23,7 +23,8 @@ class JwtService {
 		val now = Date()
 		val expirationDate = Date(now.time + expiration)
 
-		return Jwts.builder()
+		return Jwts
+			.builder()
 			.claims(claims)
 			.subject(subject)
 			.issuedAt(now)
@@ -32,25 +33,22 @@ class JwtService {
 			.compact()
 	}
 
-	fun validateToken(token: String, user: UserDetails): Boolean {
-		return (extractUsername(token) == user.username && !isTokenExpired(token))
-	}
+	fun validateToken(
+		token: String,
+		user: UserDetails,
+	): Boolean = (extractUsername(token) == user.username && !isTokenExpired(token))
 
-	fun extractUsername(token: String): String {
-		return extractClaims(token).subject
-	}
+	fun extractUsername(token: String): String = extractClaims(token).subject
 
-	private fun getSigningKey(): SecretKey {
-		return Keys.hmacShaKeyFor(secret.toByteArray())
-	}
+	private fun getSigningKey(): SecretKey = Keys.hmacShaKeyFor(secret.toByteArray())
 
-	private fun extractClaims(token: String): Claims {
-		return Jwts.parser()
+	private fun extractClaims(token: String): Claims =
+		Jwts
+			.parser()
 			.verifyWith(getSigningKey())
 			.build()
 			.parseSignedClaims(token)
 			.payload
-	}
 
 	private fun isTokenExpired(token: String): Boolean {
 		val claims = extractClaims(token)

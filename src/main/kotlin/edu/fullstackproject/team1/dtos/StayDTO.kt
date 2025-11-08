@@ -5,14 +5,14 @@ import com.fasterxml.jackson.annotation.JsonInclude
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class StayTypeResponse(
 	val id: Long?,
-	val name: String
+	val name: String,
 )
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class ServiceResponse(
 	val id: Long?,
 	val name: String,
-	val icon: String?
+	val icon: String?,
 )
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -25,7 +25,7 @@ data class StayResponse(
 	val city: CityResponse?,
 	val stayType: StayTypeResponse?,
 	val services: List<ServiceResponse>?,
-	val units: List<StayUnitResponse>?
+	val units: List<StayUnitResponse>?,
 )
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
@@ -36,5 +36,5 @@ data class StayUnitResponse(
 	val capacity: Int,
 	val pricePerNight: Double,
 	val roomType: String,
-	val stay: StayResponse?
+	val stay: StayResponse?,
 )

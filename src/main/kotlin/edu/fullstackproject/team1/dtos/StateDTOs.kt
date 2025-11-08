@@ -9,5 +9,5 @@ data class StateResponse(
 	val code: String?,
 	val country: CountryResponse?,
 	val latitude: Double?,
-	val longitude: Double?
+	val longitude: Double?,
 )

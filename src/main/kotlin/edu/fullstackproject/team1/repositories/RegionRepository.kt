@@ -9,10 +9,12 @@ import org.springframework.stereotype.Repository
 interface RegionRepository : JpaRepository<Region, Long> {
 	fun findByNameContainingIgnoreCase(name: String): List<Region>
 
-	@Query("""
+	@Query(
+		"""
 		SELECT r FROM Region r
 		LEFT JOIN FETCH r.countries c
 		WHERE r.id = :id
-	""")
+	""",
+	)
 	fun findByIdWithCountries(id: Long): Region?
 }

@@ -11,7 +11,7 @@ import org.springframework.web.server.ResponseStatusException
 
 @Service
 class CountryService(
-	private val countryRepository: CountryRepository
+	private val countryRepository: CountryRepository,
 ) {
 	fun getAllCountries(): List<CountryResponse> {
 		val countries = countryRepository.findAll()
@@ -27,14 +27,15 @@ class CountryService(
 				currencySymbol = it.currencySymbol,
 				region = null,
 				states = null,
-				cities = null
+				cities = null,
 			)
 		}
 	}
 
 	fun getCountryById(id: Long): CountryResponse {
-		val country = countryRepository.findByIdWithRegionCitiesAndStates(id)
-			?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Country not found")
+		val country =
+			countryRepository.findByIdWithRegionCitiesAndStates(id)
+				?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Country not found")
 
 		return CountryResponse(
 			id = country.id,
@@ -44,46 +45,50 @@ class CountryService(
 			phoneCode = country.phoneCode,
 			currencyCode = country.currencyCode,
 			currencySymbol = country.currencySymbol,
-			region = country.region?.let {
-				RegionResponse(
-					id = it.id,
-					name = it.name,
-					code = it.code,
-					countries = null
-				)
-			},
-			states = country.states.map {
-				StateResponse(
-					id = it.id,
-					name = it.name,
-					code = it.code,
-					country = null,
-					latitude = it.latitude,
-					longitude = it.longitude,
-				)
-			},
-			cities = country.cities.map {
-				CityResponse(
-					id = it.id,
-					name = it.name,
-					nameAscii = it.nameAscii,
-					country = null,
-					state = null,
-					latitude = it.latitude,
-					longitude = it.longitude,
-					timezone = it.timezone,
-					googlePlaceId = it.googlePlaceId,
-					population = it.population,
-					isCapital = it.isCapital,
-					isFeatured = it.isFeatured
-				)
-			}
+			region =
+				country.region?.let {
+					RegionResponse(
+						id = it.id,
+						name = it.name,
+						code = it.code,
+						countries = null,
+					)
+				},
+			states =
+				country.states.map {
+					StateResponse(
+						id = it.id,
+						name = it.name,
+						code = it.code,
+						country = null,
+						latitude = it.latitude,
+						longitude = it.longitude,
+					)
+				},
+			cities =
+				country.cities.map {
+					CityResponse(
+						id = it.id,
+						name = it.name,
+						nameAscii = it.nameAscii,
+						country = null,
+						state = null,
+						latitude = it.latitude,
+						longitude = it.longitude,
+						timezone = it.timezone,
+						googlePlaceId = it.googlePlaceId,
+						population = it.population,
+						isCapital = it.isCapital,
+						isFeatured = it.isFeatured,
+					)
+				},
 		)
 	}
 
 	fun getCountryByIso2Code(iso2Code: String): CountryResponse {
-		val country = countryRepository.findByIso2Code(iso2Code)
-			?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Country not found")
+		val country =
+			countryRepository.findByIso2Code(iso2Code)
+				?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Country not found")
 
 		return CountryResponse(
 			id = country.id,
@@ -95,13 +100,14 @@ class CountryService(
 			currencySymbol = country.currencySymbol,
 			region = null,
 			states = null,
-			cities = null
+			cities = null,
 		)
 	}
 
 	fun getCountryByIso3Code(iso3Code: String): CountryResponse {
-		val country = countryRepository.findByIso3Code(iso3Code)
-			?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Country not found")
+		val country =
+			countryRepository.findByIso3Code(iso3Code)
+				?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "Country not found")
 
 		return CountryResponse(
 			id = country.id,
@@ -113,7 +119,7 @@ class CountryService(
 			currencySymbol = country.currencySymbol,
 			region = null,
 			states = null,
-			cities = null
+			cities = null,
 		)
 	}
 
@@ -131,7 +137,7 @@ class CountryService(
 				currencySymbol = it.currencySymbol,
 				region = null,
 				states = null,
-				cities = null
+				cities = null,
 			)
 		}
 	}

@@ -7,5 +7,5 @@ data class RegionResponse(
 	val id: Long?,
 	val name: String,
 	val code: String?,
-	val countries: List<CountryResponse>?
+	val countries: List<CountryResponse>?,
 )

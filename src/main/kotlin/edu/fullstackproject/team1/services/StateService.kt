@@ -9,7 +9,7 @@ import org.springframework.web.server.ResponseStatusException
 
 @Service
 class StateService(
-	private val stateRepository: StateRepository
+	private val stateRepository: StateRepository,
 ) {
 	fun getAllStates(): List<StateResponse> {
 		val states = stateRepository.findAll()
@@ -21,33 +21,35 @@ class StateService(
 				code = state.code,
 				country = null,
 				latitude = state.latitude,
-				longitude = state.longitude
+				longitude = state.longitude,
 			)
 		}
 	}
 
 	fun getStateById(id: Long): StateResponse {
-		val state = stateRepository.findByIdWithCountry(id)
-			?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "State not found")
+		val state =
+			stateRepository.findByIdWithCountry(id)
+				?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "State not found")
 
 		return StateResponse(
 			id = state.id,
 			name = state.name,
 			code = state.code,
-			country = CountryResponse(
-				id = state.country.id,
-				name = state.country.name,
-				iso2Code = state.country.iso2Code,
-				iso3Code = state.country.iso3Code,
-				phoneCode = state.country.phoneCode,
-				currencyCode = state.country.currencyCode,
-				currencySymbol = state.country.currencySymbol,
-				region = null,
-				states = null,
-				cities = null
-			),
+			country =
+				CountryResponse(
+					id = state.country.id,
+					name = state.country.name,
+					iso2Code = state.country.iso2Code,
+					iso3Code = state.country.iso3Code,
+					phoneCode = state.country.phoneCode,
+					currencyCode = state.country.currencyCode,
+					currencySymbol = state.country.currencySymbol,
+					region = null,
+					states = null,
+					cities = null,
+				),
 			latitude = state.latitude,
-			longitude = state.longitude
+			longitude = state.longitude,
 		)
 	}
 
@@ -61,7 +63,7 @@ class StateService(
 				code = state.code,
 				country = null,
 				latitude = state.latitude,
-				longitude = state.longitude
+				longitude = state.longitude,
 			)
 		}
 	}

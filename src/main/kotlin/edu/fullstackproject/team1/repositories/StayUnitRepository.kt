@@ -9,23 +9,29 @@ import java.math.BigDecimal
 
 @Repository
 interface StayUnitRepository : JpaRepository<StayUnit, Long> {
-	@Query("""
+	@Query(
+		"""
         SELECT su FROM StayUnit su
         WHERE su.stay.id = :stayId
         ORDER BY su.pricePerNight
-    """)
-	fun findByStayId(@Param("stayId") stayId: Long): List<StayUnit>
+    """,
+	)
+	fun findByStayId(
+		@Param("stayId") stayId: Long,
+	): List<StayUnit>
 
-	@Query("""
+	@Query(
+		"""
         SELECT su FROM StayUnit su
         WHERE su.stay.id = :stayId
         AND su.capacity >= :minCapacity
         AND su.pricePerNight <= :maxPrice
         ORDER BY su.pricePerNight
-    """)
+    """,
+	)
 	fun findAvailableUnits(
 		@Param("stayId") stayId: Long,
 		@Param("minCapacity") minCapacity: Int,
-		@Param("maxPrice") maxPrice: BigDecimal
+		@Param("maxPrice") maxPrice: BigDecimal,
 	): List<StayUnit>
 }

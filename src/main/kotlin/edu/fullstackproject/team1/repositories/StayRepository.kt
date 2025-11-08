@@ -10,15 +10,21 @@ import org.springframework.stereotype.Repository
 
 @Repository
 interface StayRepository : JpaRepository<Stay, Long> {
-	@Query("""
+	@Query(
+		"""
         SELECT s FROM Stay s
         JOIN FETCH s.city c
         JOIN FETCH s.stayType st
         WHERE s.city.id = :cityId
-    """)
-	fun findByCityIdWithCityAndType(@Param("cityId") cityId: Long, pageable: Pageable): Page<Stay>
+    """,
+	)
+	fun findByCityIdWithCityAndType(
+		@Param("cityId") cityId: Long,
+		pageable: Pageable,
+	): Page<Stay>
 
-	@Query("""
+	@Query(
+		"""
         SELECT s FROM Stay s
         JOIN FETCH s.city c
         JOIN FETCH s.stayType st
@@ -40,11 +46,12 @@ interface StayRepository : JpaRepository<Stay, Long> {
                 sin(radians(s.latitude))
             )
         )
-    """)
+    """,
+	)
 	fun findStaysNearby(
 		@Param("latitude") latitude: Double,
 		@Param("longitude") longitude: Double,
 		@Param("radiusKm") radiusKm: Double,
-		pageable: Pageable
+		pageable: Pageable,
 	): Page<Stay>
 }

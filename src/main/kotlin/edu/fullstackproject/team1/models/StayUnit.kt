@@ -19,31 +19,23 @@ data class StayUnit(
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	val id: Long? = null,
-
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "stay_id", nullable = false)
 	val stay: Stay,
-
 	@Column(nullable = false, length = 50)
 	val stayNumber: String,
-
 	@Column(nullable = false)
 	val numberOfBeds: Int,
-
 	@Column(nullable = false)
 	val capacity: Int,
-
 	@Column(nullable = false)
 	val pricePerNight: Double,
-
 	@Column(nullable = false, length = 50)
 	val roomType: String,
-
 	@CreationTimestamp
 	@Column(nullable = false)
 	val createdAt: Instant? = null,
-
 	@UpdateTimestamp
 	@Column(nullable = false)
-	val updatedAt: Instant? = null
+	val updatedAt: Instant? = null,
 )

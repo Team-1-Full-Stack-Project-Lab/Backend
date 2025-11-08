@@ -18,18 +18,14 @@ data class StayService(
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	val id: Long? = null,
-
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "stay_id", nullable = false)
 	val stay: Stay,
-
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "service_id", nullable = false)
 	val service: Service,
-
 	@CreationTimestamp
 	val createdAt: Instant? = null,
-
 	@UpdateTimestamp
-	val updatedAt: Instant? = null
+	val updatedAt: Instant? = null,
 )
