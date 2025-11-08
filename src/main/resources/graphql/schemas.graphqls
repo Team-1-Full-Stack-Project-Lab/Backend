@@ -95,6 +95,16 @@ type CityPage {
 	first: Boolean!
 	last: Boolean!
 }
+type StayPage {
+	content: [Stay!]!
+	totalElements: Int!
+	totalPages: Int!
+	number: Int!
+	size: Int!
+	first: Boolean!
+	last: Boolean!
+	empty: Boolean!
+}
 
 #USER TYPES
 type User{
@@ -157,6 +167,38 @@ input UpdateTripRequest {
 	endDate: Date
 }
 
+#STAYS TYPES AND RESPONSES
+type Stay {
+	id: ID!
+	name: String!
+	address: String!
+	latitude: Float!
+	longitude: Float!
+	city: CityResponse
+	stayType: StayType
+	services: [Service!]
+	units: [StayUnit!]
+}
+type StayType {
+	id: ID!
+	name: String!
+}
+
+type Service {
+	id: ID!
+	name: String!
+	icon: String
+}
+type StayUnit {
+	id: ID!
+	stayNumber: String!
+	numberOfBeds: Int!
+	capacity: Int!
+	pricePerNight: Float!
+	roomType: String!
+	stay: Stay
+}
+
 #QUERIES
 type Query {
 	#Get by ID CITY - COUNTRY - STATE - REGION
@@ -180,6 +222,38 @@ type Query {
 	getUser: User!
 	#Trip Queries
 	getUserItineraries: TripsList!
+	#Stay Queries
+	getAllStays(
+		page: Int = 0
+		size: Int = 20
+	): StayPage!
+	getStayById(id: ID!): Stay
+	getStaysByCity(
+		cityId: ID!
+		page: Int = 0
+		size: Int = 20
+	): StayPage!
+	searchStaysNearby(
+		latitude: Float!
+		longitude: Float!
+		radiusKm: Float = 10.0
+		page: Int = 0
+		size: Int = 20
+	): StayPage!
+	#Stay Types Queries
+	getAllStayTypes(name: String): [StayType!]! #BIEN
+	getStayTypeById(id: ID!): StayType #BIEN
+	#Services Queries
+	getAllServices(name: String): [Service!]! #BIEN
+	getServiceById(id: ID!): Service #BIEN
+	#Stay Units Queries
+	getStayUnitsByStayId(stayId: ID!): [StayUnit!]! #BIEN PERO MUESTRA LISTA DE STAYS(MAL)
+	getStayUnitById(id: ID!): StayUnit #LISTA STAYS NULL
+	searchAvailableUnits( #MISMO QUE ANTERIOR
+		stayId: ID!
+		minCapacity: Int!
+		maxPrice: Float!
+	): [StayUnit!]!
 }
 #MUTATIONS
 type Mutation {
