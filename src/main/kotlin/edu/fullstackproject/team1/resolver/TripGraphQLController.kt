@@ -6,6 +6,7 @@ import edu.fullstackproject.team1.dtos.TripResponse
 import edu.fullstackproject.team1.dtos.TripsListResponse
 import edu.fullstackproject.team1.dtos.UpdateTripRequest
 import edu.fullstackproject.team1.services.TripService
+import jakarta.validation.Valid
 import org.springframework.graphql.data.method.annotation.Argument
 import org.springframework.graphql.data.method.annotation.MutationMapping
 import org.springframework.graphql.data.method.annotation.QueryMapping
@@ -22,7 +23,7 @@ class TripGraphQLController(
 	@PreAuthorize("isAuthenticated()")
 	fun createItinerary(
 		@AuthenticationPrincipal user: UserDetails,
-		@Argument request: CreateTripRequest,
+		@Argument @Valid request: CreateTripRequest,
 	): TripResponse = tripService.createTrip(user.username, request)
 
 	@QueryMapping
@@ -49,6 +50,6 @@ class TripGraphQLController(
 	fun updateItinerary(
 		@AuthenticationPrincipal user: UserDetails,
 		@Argument id: Long,
-		@Argument request: UpdateTripRequest,
+		@Argument @Valid request: UpdateTripRequest,
 	): TripResponse = tripService.updateTrip(user.username, id, request)
 }

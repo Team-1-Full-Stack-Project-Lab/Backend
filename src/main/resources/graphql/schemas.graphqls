@@ -176,15 +176,14 @@ type Stay {
 	longitude: Float!
 	city: CityResponse
 	stayType: StayType
-	services: [Service!]
-	units: [StayUnit!]
+	services: [StayService!]
+	units: [StayUnitResponse!]
 }
 type StayType {
 	id: ID!
 	name: String!
 }
-
-type Service {
+type StayService {
 	id: ID!
 	name: String!
 	icon: String
@@ -198,72 +197,58 @@ type StayUnit {
 	roomType: String!
 	stay: Stay
 }
+type StayUnitResponse {
+	id: ID!
+	stayNumber: String!
+	numberOfBeds: Int!
+	capacity: Int!
+	pricePerNight: Float!
+	roomType: String!
+}
 
 #QUERIES
 type Query {
-	#Get by ID CITY - COUNTRY - STATE - REGION
+	#City queries
 	getCityById(id: ID!): CityResponseWithCountry
-	getCountryById(id: ID!): Country
-	getStateById(id: ID!): State
+	getAllCities(name: String, country: ID, state: ID, featured: Boolean, page: Int, size: Int): CityPage!
+	#Country queries
+	getCountryById(id: ID!): CountryResponse
+	getCountries(name: String): [CountryResponse!]!
+	#State queries
+	getStateById(id: ID!): StateResponse
+	getStates(name: String): [StateResponse!]!
+	#Region queries
 	getRegionById(id: ID!): Region
-	#Get All or by Name CITY - COUNTRY - STATE - REGION
-	getCountries(name:String):[CountryResponse!]!
-	getStates(name:String): [StateResponse!]!
-	getRegions(name:String): [Region!]!
-	getAllCities(
-		name: String
-		country: ID
-		state: ID
-		featured: Boolean
-		page: Int
-		size: Int
-	): CityPage!
-	#User Queries
+	getRegions(name: String): [Region!]!
+	#User queries
 	getUser: User!
-	#Trip Queries
+	#Trip queries
 	getUserItineraries: TripsList!
-	#Stay Queries
-	getAllStays(
-		page: Int = 0
-		size: Int = 20
-	): StayPage!
+	#Stay queries
 	getStayById(id: ID!): Stay
-	getStaysByCity(
-		cityId: ID!
-		page: Int = 0
-		size: Int = 20
-	): StayPage!
-	searchStaysNearby(
-		latitude: Float!
-		longitude: Float!
-		radiusKm: Float = 10.0
-		page: Int = 0
-		size: Int = 20
-	): StayPage!
-	#Stay Types Queries
-	getAllStayTypes(name: String): [StayType!]! #BIEN
-	getStayTypeById(id: ID!): StayType #BIEN
-	#Services Queries
-	getAllServices(name: String): [Service!]! #BIEN
-	getServiceById(id: ID!): Service #BIEN
-	#Stay Units Queries
-	getStayUnitsByStayId(stayId: ID!): [StayUnit!]! #BIEN PERO MUESTRA LISTA DE STAYS(MAL)
-	getStayUnitById(id: ID!): StayUnit #LISTA STAYS NULL
-	searchAvailableUnits( #MISMO QUE ANTERIOR
-		stayId: ID!
-		minCapacity: Int!
-		maxPrice: Float!
-	): [StayUnit!]!
+	getAllStays(page: Int, size: Int): StayPage!
+	getStaysByCity(cityId: ID!, page: Int, size: Int): StayPage!
+	searchStaysNearby(latitude: Float!, longitude: Float!, radius: Float, page: Int, size: Int): StayPage!
+	#StayType queries
+	getStayTypeById(id: ID!): StayType
+	getAllStayTypes(name: String): [StayType!]!
+	#Service queries
+	getServiceById(id: ID!): StayService
+	getAllServices(name: String): [StayService!]!
+	#StayUnit queries
+	getStayUnitById(id: ID!): StayUnit
+	getStayUnitsByStayId(stayId: ID!): [StayUnit!]!
+	searchAvailableUnits(stayId: ID!, minCapacity: Int!, maxPrice: Float!): [StayUnit!]!
 }
 #MUTATIONS
 type Mutation {
-	# Auth Mutations
+	#Auth mutations
 	login(request: LoginRequest!): Auth!
 	register(request: RegisterRequest!): Auth!
-	# User Mutations
+	#User mutations
 	updateUser(request: UserUpdateRequestGraphQL!): User!
 	deleteUser: DeleteUserResponse!
-	# Trip Mutations
+	#Trip mutations
 	createItinerary(request: CreateTripRequest!): Trip!
 	updateItinerary(id: ID!, request: UpdateTripRequest!): Trip!
 	deleteItinerary(id: ID!): DeleteItineraryResponse!

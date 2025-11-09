@@ -38,6 +38,7 @@ CREATE TABLE stay_services (
     stay_id INT NOT NULL REFERENCES stays(id) ON DELETE CASCADE,
     service_id INT NOT NULL REFERENCES services(id) ON DELETE CASCADE,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     UNIQUE(stay_id, service_id)
 );
