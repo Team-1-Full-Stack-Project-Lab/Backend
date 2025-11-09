@@ -8,28 +8,24 @@ data class LoginRequest(
 	@field:NotBlank
 	@field:Email
 	val email: String,
-
 	@field:NotBlank
 	@field:Size(min = 6)
-	val password: String
+	val password: String,
 )
 
 data class RegisterRequest(
 	@field:NotBlank
 	@field:Email
 	val email: String,
-
 	@field:NotBlank
 	val firstName: String,
-
 	@field:NotBlank
 	val lastName: String,
-
 	@field:NotBlank
 	@field:Size(min = 6)
-	val password: String
+	val password: String,
 )
 
 data class AuthResponse(
-	val token: String
+	val token: String,
 )

@@ -12,22 +12,17 @@ import org.springframework.security.crypto.password.PasswordEncoder
 
 @Configuration
 class ApplicationConfig(
-	private val userRepository: UserRepository
+	private val userRepository: UserRepository,
 ) {
 	@Bean
-	fun authenticationManager(config: AuthenticationConfiguration): AuthenticationManager {
-		return config.authenticationManager
-	}
+	fun authenticationManager(config: AuthenticationConfiguration): AuthenticationManager = config.authenticationManager
 
 	@Bean
-	fun passwordEncoder(): PasswordEncoder {
-		return BCryptPasswordEncoder()
-	}
+	fun passwordEncoder(): PasswordEncoder = BCryptPasswordEncoder()
 
 	@Bean
-	fun userDetailsService(): UserDetailsService {
-		return UserDetailsService { username ->
+	fun userDetailsService(): UserDetailsService =
+		UserDetailsService { username ->
 			userRepository.findByEmail(username) ?: throw UsernameNotFoundException("User not found")
 		}
-	}
 }

@@ -1,0 +1,255 @@
+scalar Date
+
+#CITY - COUNTRY - STATE - REGION GRAPHQL SCHEMA
+type City {
+	id: ID!
+	name: String!
+	nameAscii: String
+	latitude: Float!
+	longitude: Float!
+	timezone: String
+	googlePlaceId: String
+	population: Int
+	isCapital: Boolean!
+	isFeatured: Boolean!
+	country: Country!
+	state: State
+}
+type Country{
+	id: ID!
+	name: String!
+	iso2Code: String!
+	iso3Code: String!
+	phoneCode: String
+	currencyCode: String
+	currencySymbol: String
+	region: Region
+	states: [StateResponse!]
+	cities: [CityResponse!]
+}
+type State{
+	id: ID!
+	name: String!
+	code: String
+	latitude: Float
+	longitude: Float
+	country: CountryResponse!
+}
+type Region {
+	id: ID!
+	name: String!
+	code: String
+}
+
+#CITY - COUNTRY - STATE - REGION RESPONSES
+type CityResponse {
+	id: ID!
+	name: String!
+	nameAscii: String
+	latitude: Float!
+	longitude: Float!
+	timezone: String
+	googlePlaceId: String
+	population: Int
+	isCapital: Boolean!
+	isFeatured: Boolean!
+}
+type CityResponseWithCountry {
+	id: ID!
+	name: String!
+	nameAscii: String
+	latitude: Float!
+	longitude: Float!
+	timezone: String
+	googlePlaceId: String
+	population: Int
+	isCapital: Boolean!
+	isFeatured: Boolean!
+	country: CountryResponse!
+	state: StateResponse
+}
+type CountryResponse{
+	id: ID!
+	name: String!
+	iso2Code: String!
+	iso3Code: String!
+	phoneCode: String
+	currencyCode: String
+	currencySymbol: String
+}
+type StateResponse{
+	id: ID!
+	name: String!
+	code: String
+	latitude: Float
+	longitude: Float
+}
+
+#PAGINATION RESPONSE
+type CityPage {
+	content: [CityResponseWithCountry!]!
+	totalElements: Int!
+	totalPages: Int!
+	number: Int!
+	size: Int!
+	first: Boolean!
+	last: Boolean!
+}
+type StayPage {
+	content: [Stay!]!
+	totalElements: Int!
+	totalPages: Int!
+	number: Int!
+	size: Int!
+	first: Boolean!
+	last: Boolean!
+	empty: Boolean!
+}
+
+#USER TYPES
+type User{
+	email: String!
+	firstName: String!
+	lastName: String!
+}
+#USER INPUT TYPES
+input UserUpdateRequestGraphQL {
+	firstName: String!
+	lastName: String!
+}
+input LoginRequest {
+	email: String!
+	password: String!
+}
+input RegisterRequest {
+	email: String!
+	firstName: String!
+	lastName: String!
+	password: String!
+}
+#AUTH TYPES
+type Auth {
+	token: String!
+}
+type DeleteUserResponse {
+	success: Boolean!
+	message: String!
+}
+
+#TRIPS TYPES AND RESPONSES
+type Trip {
+	id: ID!
+	name: String!
+	cityId: ID!
+	cityName: String!
+	countryName: String!
+	startDate: Date!
+	finishDate: Date!
+}
+type TripsList {
+	trips: [Trip!]!
+}
+type DeleteItineraryResponse {
+	success: Boolean!
+	message: String!
+}
+#TRIPS INPUTS
+input CreateTripRequest {
+	cityId: ID!
+	startDate: Date!
+	endDate: Date!
+	name: String
+}
+input UpdateTripRequest {
+	name: String
+	cityId: ID
+	startDate: Date
+	endDate: Date
+}
+
+#STAYS TYPES AND RESPONSES
+type Stay {
+	id: ID!
+	name: String!
+	address: String!
+	latitude: Float!
+	longitude: Float!
+	city: CityResponse
+	stayType: StayType
+	services: [StayService!]
+	units: [StayUnitResponse!]
+}
+type StayType {
+	id: ID!
+	name: String!
+}
+type StayService {
+	id: ID!
+	name: String!
+	icon: String
+}
+type StayUnit {
+	id: ID!
+	stayNumber: String!
+	numberOfBeds: Int!
+	capacity: Int!
+	pricePerNight: Float!
+	roomType: String!
+	stay: Stay
+}
+type StayUnitResponse {
+	id: ID!
+	stayNumber: String!
+	numberOfBeds: Int!
+	capacity: Int!
+	pricePerNight: Float!
+	roomType: String!
+}
+
+#QUERIES
+type Query {
+	#City queries
+	getCityById(id: ID!): CityResponseWithCountry
+	getAllCities(name: String, country: ID, state: ID, featured: Boolean, page: Int, size: Int): CityPage!
+	#Country queries
+	getCountryById(id: ID!): CountryResponse
+	getCountries(name: String): [CountryResponse!]!
+	#State queries
+	getStateById(id: ID!): StateResponse
+	getStates(name: String): [StateResponse!]!
+	#Region queries
+	getRegionById(id: ID!): Region
+	getRegions(name: String): [Region!]!
+	#User queries
+	getUser: User!
+	#Trip queries
+	getUserItineraries: TripsList!
+	#Stay queries
+	getStayById(id: ID!): Stay
+	getAllStays(page: Int, size: Int): StayPage!
+	getStaysByCity(cityId: ID!, page: Int, size: Int): StayPage!
+	searchStaysNearby(latitude: Float!, longitude: Float!, radius: Float, page: Int, size: Int): StayPage!
+	#StayType queries
+	getStayTypeById(id: ID!): StayType
+	getAllStayTypes(name: String): [StayType!]!
+	#Service queries
+	getServiceById(id: ID!): StayService
+	getAllServices(name: String): [StayService!]!
+	#StayUnit queries
+	getStayUnitById(id: ID!): StayUnit
+	getStayUnitsByStayId(stayId: ID!): [StayUnit!]!
+	searchAvailableUnits(stayId: ID!, minCapacity: Int!, maxPrice: Float!): [StayUnit!]!
+}
+#MUTATIONS
+type Mutation {
+	#Auth mutations
+	login(request: LoginRequest!): Auth!
+	register(request: RegisterRequest!): Auth!
+	#User mutations
+	updateUser(request: UserUpdateRequestGraphQL!): User!
+	deleteUser: DeleteUserResponse!
+	#Trip mutations
+	createItinerary(request: CreateTripRequest!): Trip!
+	updateItinerary(id: ID!, request: UpdateTripRequest!): Trip!
+	deleteItinerary(id: ID!): DeleteItineraryResponse!
+}
