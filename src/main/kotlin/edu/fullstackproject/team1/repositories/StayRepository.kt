@@ -61,7 +61,7 @@ interface StayRepository : JpaRepository<Stay, Long> {
 	JOIN FETCH s.city c
 	JOIN FETCH s.stayType st
 	""",
-		countQuery = "SELECT COUNT(DISTINCT s) FROM Stay s"
+		countQuery = "SELECT COUNT(DISTINCT s) FROM Stay s",
 	)
 	fun findAllWithCityAndType(pageable: Pageable): Page<Stay>
 }
