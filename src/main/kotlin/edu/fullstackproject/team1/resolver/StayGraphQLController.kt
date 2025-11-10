@@ -10,16 +10,17 @@ import org.springframework.stereotype.Controller
 
 @Controller
 class StayGraphQLController(
-	private val stayService: StayService
+	private val stayService: StayService,
 ) {
 	@QueryMapping
-	fun getStayById(@Argument id: Long): StayResponse? =
-		stayService.getStayById(id)
+	fun getStayById(
+		@Argument id: Long,
+	): StayResponse? = stayService.getStayById(id)
 
 	@QueryMapping
 	fun getAllStays(
 		@Argument(name = "page") page: Int?,
-		@Argument(name = "size") size: Int?
+		@Argument(name = "size") size: Int?,
 	): Page<StayResponse> {
 		val pageable = PageRequest.of(page ?: 0, size ?: 20)
 		return stayService.getAllStays(pageable)
@@ -29,7 +30,7 @@ class StayGraphQLController(
 	fun getStaysByCity(
 		@Argument cityId: Long,
 		@Argument(name = "page") page: Int?,
-		@Argument(name = "size") size: Int?
+		@Argument(name = "size") size: Int?,
 	): Page<StayResponse> {
 		val pageable = PageRequest.of(page ?: 0, size ?: 20)
 		return stayService.getStaysByCity(cityId, pageable)
@@ -41,15 +42,16 @@ class StayGraphQLController(
 		@Argument longitude: Double,
 		@Argument(name = "radius") radius: Double?,
 		@Argument(name = "page") page: Int?,
-		@Argument(name = "size") size: Int?
+		@Argument(name = "size") size: Int?,
 	): Page<StayResponse> {
 		val pageable = PageRequest.of(page ?: 0, size ?: 20)
-		val stays= stayService.searchStaysNearby(
-			latitude,
-			longitude,
-			radius ?: 10.0,
-			pageable
-		)
+		val stays =
+			stayService.searchStaysNearby(
+				latitude,
+				longitude,
+				radius ?: 10.0,
+				pageable,
+			)
 		return stays
 	}
 }

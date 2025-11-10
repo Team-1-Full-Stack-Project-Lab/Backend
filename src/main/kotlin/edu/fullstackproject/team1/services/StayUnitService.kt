@@ -17,7 +17,7 @@ import java.math.BigDecimal
 @Service
 class StayUnitService(
 	private val stayUnitRepository: StayUnitRepository,
-	private val stayServiceRepository: StayServiceRepository
+	private val stayServiceRepository: StayServiceRepository,
 ) {
 	fun getStayUnitsByStayId(stayId: Long): List<StayUnitResponse> {
 		val units = stayUnitRepository.findByStayIdWithStay(stayId)
@@ -25,8 +25,10 @@ class StayUnitService(
 	}
 
 	fun getStayUnitById(id: Long): StayUnitResponse {
-		val unit = stayUnitRepository.findById(id)
-			.orElseThrow { ResponseStatusException(HttpStatus.NOT_FOUND, "Stay unit not found") }
+		val unit =
+			stayUnitRepository
+				.findById(id)
+				.orElseThrow { ResponseStatusException(HttpStatus.NOT_FOUND, "Stay unit not found") }
 		return mapToStayUnitResponse(unit, includeStay = true)
 	}
 
@@ -50,17 +52,19 @@ class StayUnitService(
 			capacity = unit.capacity,
 			pricePerNight = unit.pricePerNight,
 			roomType = unit.roomType,
-			stay = if (includeStay) {
-				mapToStayResponse(unit.stay)
-			} else {
-				null
-			},
+			stay =
+				if (includeStay) {
+					mapToStayResponse(unit.stay)
+				} else {
+					null
+				},
 		)
 
 	private fun mapToStayResponse(stay: Stay): StayResponse {
-		val services = stayServiceRepository.findByStayIdWithService(stay.id!!).map {
-			ServiceResponse(it.service.id, it.service.name, it.service.icon)
-		}
+		val services =
+			stayServiceRepository.findByStayIdWithService(stay.id!!).map {
+				ServiceResponse(it.service.id, it.service.name, it.service.icon)
+			}
 
 		return StayResponse(
 			id = stay.id,
@@ -68,24 +72,26 @@ class StayUnitService(
 			address = stay.address,
 			latitude = stay.latitude,
 			longitude = stay.longitude,
-			city = CityResponse(
-				id = stay.city.id,
-				name = stay.city.name,
-				nameAscii = stay.city.nameAscii,
-				country = null,
-				state = null,
-				latitude = stay.city.latitude,
-				longitude = stay.city.longitude,
-				timezone = stay.city.timezone,
-				googlePlaceId = stay.city.googlePlaceId,
-				population = stay.city.population,
-				isCapital = stay.city.isCapital,
-				isFeatured = stay.city.isFeatured,
-			),
-			stayType = StayTypeResponse(
-				id = stay.stayType.id,
-				name = stay.stayType.name,
-			),
+			city =
+				CityResponse(
+					id = stay.city.id,
+					name = stay.city.name,
+					nameAscii = stay.city.nameAscii,
+					country = null,
+					state = null,
+					latitude = stay.city.latitude,
+					longitude = stay.city.longitude,
+					timezone = stay.city.timezone,
+					googlePlaceId = stay.city.googlePlaceId,
+					population = stay.city.population,
+					isCapital = stay.city.isCapital,
+					isFeatured = stay.city.isFeatured,
+				),
+			stayType =
+				StayTypeResponse(
+					id = stay.stayType.id,
+					name = stay.stayType.name,
+				),
 			services = services,
 			units = null,
 		)

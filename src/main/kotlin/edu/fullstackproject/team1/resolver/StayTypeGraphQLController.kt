@@ -8,17 +8,20 @@ import org.springframework.stereotype.Controller
 
 @Controller
 class StayTypeGraphQLController(
-	private val stayTypeService: StayTypeService
+	private val stayTypeService: StayTypeService,
 ) {
 	@QueryMapping
-	fun getStayTypeById(@Argument id:Long): StayTypeResponse?=
-		stayTypeService.getStayTypeById(id)
+	fun getStayTypeById(
+		@Argument id: Long,
+	): StayTypeResponse? = stayTypeService.getStayTypeById(id)
 
 	@QueryMapping
-	fun getAllStayTypes(@Argument name:String?): List<StayTypeResponse> =
-		if(name!=null){
+	fun getAllStayTypes(
+		@Argument name: String?,
+	): List<StayTypeResponse> =
+		if (name != null) {
 			stayTypeService.getStayTypesByName(name)
-		}else{
+		} else {
 			stayTypeService.getAllStayTypes()
 		}
 }

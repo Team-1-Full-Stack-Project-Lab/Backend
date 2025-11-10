@@ -8,17 +8,20 @@ import org.springframework.stereotype.Controller
 
 @Controller
 class ServiceGraphQLController(
-	private val serviceService: ServiceService
+	private val serviceService: ServiceService,
 ) {
 	@QueryMapping
-	fun getServiceById(@Argument id:Long): ServiceResponse?=
-		serviceService.getServiceById(id)
+	fun getServiceById(
+		@Argument id: Long,
+	): ServiceResponse? = serviceService.getServiceById(id)
 
 	@QueryMapping
-	fun getAllServices(@Argument name:String?): List<ServiceResponse> =
-		if(name!=null){
+	fun getAllServices(
+		@Argument name: String?,
+	): List<ServiceResponse> =
+		if (name != null) {
 			serviceService.getServicesByName(name)
-		}else {
+		} else {
 			serviceService.getAllServices()
 		}
 }

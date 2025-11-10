@@ -17,64 +17,68 @@ import java.time.Instant
 class GraphQLExceptionHandler : DataFetcherExceptionResolverAdapter() {
 	override fun resolveToSingleError(
 		ex: Throwable,
-		env: DataFetchingEnvironment
-	): GraphQLError? {
-		return when (ex) {
+		env: DataFetchingEnvironment,
+	): GraphQLError? =
+		when (ex) {
 			// Handle validation errors (400 Bad Request)
 			is MethodArgumentNotValidException -> {
-				val errors = ex.bindingResult.allErrors
-					.groupBy { (it as? FieldError)?.field ?: "unknown" }
-					.mapValues { (_, fieldErrors) ->
-						fieldErrors.map { it.defaultMessage ?: "Validation error" }
-					}
+				val errors =
+					ex.bindingResult.allErrors
+						.groupBy { (it as? FieldError)?.field ?: "unknown" }
+						.mapValues { (_, fieldErrors) ->
+							fieldErrors.map { it.defaultMessage ?: "Validation error" }
+						}
 				buildGraphQLError(
 					env = env,
 					status = HttpStatus.BAD_REQUEST.value(),
 					error = "Validation error",
 					message = "The provided data is invalid",
 					errors = errors,
-					errorType = ErrorType.BAD_REQUEST
+					errorType = ErrorType.BAD_REQUEST,
 				)
 			}
 			// Handle constraint violations (400 Bad Request)
 			is ConstraintViolationException -> {
-				val errors = ex.constraintViolations
-					.groupBy { it.propertyPath.toString() }
-					.mapValues { (_, violations) ->
-						violations.map { it.message }
-					}
+				val errors =
+					ex.constraintViolations
+						.groupBy { it.propertyPath.toString() }
+						.mapValues { (_, violations) ->
+							violations.map { it.message }
+						}
 				buildGraphQLError(
 					env = env,
 					status = HttpStatus.BAD_REQUEST.value(),
 					error = "Validation error",
 					message = "The provided data is invalid",
 					errors = errors,
-					errorType = ErrorType.BAD_REQUEST
+					errorType = ErrorType.BAD_REQUEST,
 				)
 			}
 			// Handle ResponseStatusException (custom exceptions from services)
 			is ResponseStatusException -> {
 				val status = ex.statusCode.value()
-				val errorType = when (status) {
-					400 -> ErrorType.BAD_REQUEST
-					401 -> ErrorType.UNAUTHORIZED
-					403 -> ErrorType.FORBIDDEN
-					404 -> ErrorType.NOT_FOUND
-					else -> ErrorType.INTERNAL_ERROR
-				}
-				val errorName = when (status) {
-					400 -> "Bad request"
-					401 -> "Unauthorized"
-					403 -> "Forbidden"
-					404 -> "Not found"
-					else -> "Internal server error"
-				}
+				val errorType =
+					when (status) {
+						400 -> ErrorType.BAD_REQUEST
+						401 -> ErrorType.UNAUTHORIZED
+						403 -> ErrorType.FORBIDDEN
+						404 -> ErrorType.NOT_FOUND
+						else -> ErrorType.INTERNAL_ERROR
+					}
+				val errorName =
+					when (status) {
+						400 -> "Bad request"
+						401 -> "Unauthorized"
+						403 -> "Forbidden"
+						404 -> "Not found"
+						else -> "Internal server error"
+					}
 				buildGraphQLError(
 					env = env,
 					status = status,
 					error = errorName,
 					message = ex.reason ?: "An error occurred",
-					errorType = errorType
+					errorType = errorType,
 				)
 			}
 			// Handle IllegalArgumentException (400 Bad Request)
@@ -84,7 +88,7 @@ class GraphQLExceptionHandler : DataFetcherExceptionResolverAdapter() {
 					status = HttpStatus.BAD_REQUEST.value(),
 					error = "Bad request",
 					message = ex.message ?: "Invalid argument",
-					errorType = ErrorType.BAD_REQUEST
+					errorType = ErrorType.BAD_REQUEST,
 				)
 			}
 			// Handle any other generic exceptions (500 Internal Server Error)
@@ -94,33 +98,35 @@ class GraphQLExceptionHandler : DataFetcherExceptionResolverAdapter() {
 					status = HttpStatus.INTERNAL_SERVER_ERROR.value(),
 					error = "Internal server error",
 					message = ex.message ?: "An unexpected error occurred",
-					errorType = ErrorType.INTERNAL_ERROR
+					errorType = ErrorType.INTERNAL_ERROR,
 				)
 			}
 			else -> null
 		}
-	}
-	//GraphQL error builder
+
+	// GraphQL error builder
 	private fun buildGraphQLError(
 		env: DataFetchingEnvironment,
 		status: Int,
 		error: String,
 		message: String,
 		errors: Map<String, List<String>>? = null,
-		errorType: ErrorType
+		errorType: ErrorType,
 	): GraphQLError {
-		val errorDetails = mutableMapOf<String, Any>(
-			"timestamp" to Instant.now().toString(),
-			"status" to status,
-			"error" to error,
-			"message" to message,
-			"path" to env.executionStepInfo.path.toString()
-		)
+		val errorDetails =
+			mutableMapOf<String, Any>(
+				"timestamp" to Instant.now().toString(),
+				"status" to status,
+				"error" to error,
+				"message" to message,
+				"path" to env.executionStepInfo.path.toString(),
+			)
 		// Only include "errors" field if there are validation errors
 		if (errors != null) {
 			errorDetails["errors"] = errors
 		}
-		return GraphqlErrorBuilder.newError()
+		return GraphqlErrorBuilder
+			.newError()
 			.errorType(errorType)
 			.message(message)
 			.path(env.executionStepInfo.path)
