@@ -24,8 +24,8 @@ type Country{
 	currencyCode: String
 	currencySymbol: String
 	region: Region
-	states: [StateResponse!]
-	cities: [CityResponse!]
+	states: [State!]
+	cities: [City!]
 }
 type State{
 	id: ID!
@@ -33,7 +33,7 @@ type State{
 	code: String
 	latitude: Float
 	longitude: Float
-	country: CountryResponse!
+	country: Country!
 }
 type Region {
 	id: ID!
@@ -41,53 +41,9 @@ type Region {
 	code: String
 }
 
-#CITY - COUNTRY - STATE - REGION RESPONSES
-type CityResponse {
-	id: ID!
-	name: String!
-	nameAscii: String
-	latitude: Float!
-	longitude: Float!
-	timezone: String
-	googlePlaceId: String
-	population: Int
-	isCapital: Boolean!
-	isFeatured: Boolean!
-}
-type CityResponseWithCountry {
-	id: ID!
-	name: String!
-	nameAscii: String
-	latitude: Float!
-	longitude: Float!
-	timezone: String
-	googlePlaceId: String
-	population: Int
-	isCapital: Boolean!
-	isFeatured: Boolean!
-	country: CountryResponse!
-	state: StateResponse
-}
-type CountryResponse{
-	id: ID!
-	name: String!
-	iso2Code: String!
-	iso3Code: String!
-	phoneCode: String
-	currencyCode: String
-	currencySymbol: String
-}
-type StateResponse{
-	id: ID!
-	name: String!
-	code: String
-	latitude: Float
-	longitude: Float
-}
-
 #PAGINATION RESPONSE
 type CityPage {
-	content: [CityResponseWithCountry!]!
+	content: [City!]!
 	totalElements: Int!
 	totalPages: Int!
 	number: Int!
@@ -174,10 +130,10 @@ type Stay {
 	address: String!
 	latitude: Float!
 	longitude: Float!
-	city: CityResponse
+	city: City
 	stayType: StayType
 	services: [StayService!]
-	units: [StayUnitResponse!]
+	units: [StayUnit!]
 }
 type StayType {
 	id: ID!
@@ -197,26 +153,18 @@ type StayUnit {
 	roomType: String!
 	stay: Stay
 }
-type StayUnitResponse {
-	id: ID!
-	stayNumber: String!
-	numberOfBeds: Int!
-	capacity: Int!
-	pricePerNight: Float!
-	roomType: String!
-}
 
 #QUERIES
 type Query {
 	#City queries
-	getCityById(id: ID!): CityResponseWithCountry
+	getCityById(id: ID!): City
 	getAllCities(name: String, country: ID, state: ID, featured: Boolean, page: Int, size: Int): CityPage!
 	#Country queries
-	getCountryById(id: ID!): CountryResponse
-	getCountries(name: String): [CountryResponse!]!
+	getCountryById(id: ID!): Country
+	getCountries(name: String): [Country!]!
 	#State queries
-	getStateById(id: ID!): StateResponse
-	getStates(name: String): [StateResponse!]!
+	getStateById(id: ID!): State
+	getStates(name: String): [State!]!
 	#Region queries
 	getRegionById(id: ID!): Region
 	getRegions(name: String): [Region!]!
