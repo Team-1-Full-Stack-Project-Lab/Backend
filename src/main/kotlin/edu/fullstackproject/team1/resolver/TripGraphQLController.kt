@@ -1,11 +1,8 @@
 package edu.fullstackproject.team1.resolver
 
-import edu.fullstackproject.team1.dtos.CreateTripRequest
-import edu.fullstackproject.team1.dtos.DeleteItineraryResponse
-import edu.fullstackproject.team1.dtos.TripResponse
-import edu.fullstackproject.team1.dtos.TripsListResponse
-import edu.fullstackproject.team1.dtos.UpdateTripRequest
+import edu.fullstackproject.team1.dtos.*
 import edu.fullstackproject.team1.services.TripService
+import edu.fullstackproject.team1.services.TripStayUnitService
 import jakarta.validation.Valid
 import org.springframework.graphql.data.method.annotation.Argument
 import org.springframework.graphql.data.method.annotation.MutationMapping
@@ -18,6 +15,7 @@ import org.springframework.stereotype.Controller
 @Controller
 class TripGraphQLController(
 	private val tripService: TripService,
+	private val tripStayUnitService: TripStayUnitService,
 ) {
 	@MutationMapping
 	@PreAuthorize("isAuthenticated()")
@@ -52,4 +50,38 @@ class TripGraphQLController(
 		@Argument id: Long,
 		@Argument @Valid request: UpdateTripRequest,
 	): TripResponse = tripService.updateTrip(user.username, id, request)
+
+	@QueryMapping
+	@PreAuthorize("isAuthenticated()")
+	fun getItineraryStayUnits(
+		@AuthenticationPrincipal user: UserDetails,
+		@Argument tripId: Long
+	): TripStayUnitsListResponse = tripStayUnitService.getStayUnitsForTrip(tripId)
+
+	@MutationMapping
+	@PreAuthorize("isAuthenticated()")
+	fun addStayUnitToItinerary(
+		@AuthenticationPrincipal user: UserDetails,
+		@Argument tripId: Long,
+		@Argument @Valid request: AddStayUnitRequest
+	): TripStayUnitResponse = tripStayUnitService.addStayUnitToTrip(
+		tripId = tripId,
+		stayUnitId = request.stayUnitId,
+		startDate = request.startDate,
+		endDate = request.endDate
+	)
+
+	@MutationMapping
+	@PreAuthorize("isAuthenticated()")
+	fun removeStayUnitFromItinerary(
+		@AuthenticationPrincipal user: UserDetails,
+		@Argument tripId: Long,
+		@Argument stayUnitId: Long
+	): RemoveStayUnitResponse {
+		tripStayUnitService.removeStayUnitFromTrip(tripId, stayUnitId)
+		return RemoveStayUnitResponse(
+			success = true,
+			message = "Stay unit removed successfully"
+		)
+	}
 }
