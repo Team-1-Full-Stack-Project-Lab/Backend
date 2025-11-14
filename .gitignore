@@ -38,3 +38,10 @@ out/
 
 ### Kotlin ###
 .kotlin
+
+### Docker Local Development ###
+docker-compose.yml
+docker-compose.override.yml
+
+# misc
+DOCKER_LOCAL_DEV.md
