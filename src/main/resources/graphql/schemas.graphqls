@@ -12,10 +12,10 @@ type City {
 	population: Int
 	isCapital: Boolean!
 	isFeatured: Boolean!
-	country: Country!
+	country: Country
 	state: State
 }
-type Country{
+type Country {
 	id: ID!
 	name: String!
 	iso2Code: String!
@@ -27,7 +27,7 @@ type Country{
 	states: [State!]
 	cities: [City!]
 }
-type State{
+type State {
 	id: ID!
 	name: String!
 	code: String
@@ -63,7 +63,7 @@ type StayPage {
 }
 
 #USER TYPES
-type User{
+type User {
 	email: String!
 	firstName: String!
 	lastName: String!
@@ -179,7 +179,14 @@ input AddStayUnitRequest {
 type Query {
 	#City queries
 	getCityById(id: ID!): City
-	getAllCities(name: String, country: ID, state: ID, featured: Boolean, page: Int, size: Int): CityPage!
+	getAllCities(
+		name: String
+		country: ID
+		state: ID
+		featured: Boolean
+		page: Int
+		size: Int
+	): CityPage!
 	#Country queries
 	getCountryById(id: ID!): Country
 	getCountries(name: String): [Country!]!
@@ -198,7 +205,13 @@ type Query {
 	getStayById(id: ID!): Stay
 	getAllStays(page: Int, size: Int): StayPage!
 	getStaysByCity(cityId: ID!, page: Int, size: Int): StayPage!
-	searchStaysNearby(latitude: Float!, longitude: Float!, radius: Float, page: Int, size: Int): StayPage!
+	searchStaysNearby(
+		latitude: Float!
+		longitude: Float!
+		radius: Float
+		page: Int
+		size: Int
+	): StayPage!
 	#StayType queries
 	getStayTypeById(id: ID!): StayType
 	getAllStayTypes(name: String): [StayType!]!
@@ -208,7 +221,11 @@ type Query {
 	#StayUnit queries
 	getStayUnitById(id: ID!): StayUnit
 	getStayUnitsByStayId(stayId: ID!): [StayUnit!]!
-	searchAvailableUnits(stayId: ID!, minCapacity: Int!, maxPrice: Float!): [StayUnit!]!
+	searchAvailableUnits(
+		stayId: ID!
+		minCapacity: Int!
+		maxPrice: Float!
+	): [StayUnit!]!
 }
 #MUTATIONS
 type Mutation {
@@ -222,6 +239,12 @@ type Mutation {
 	createItinerary(request: CreateTripRequest!): Trip!
 	updateItinerary(id: ID!, request: UpdateTripRequest!): Trip!
 	deleteItinerary(id: ID!): DeleteItineraryResponse!
-	addStayUnitToItinerary(tripId: ID!, request: AddStayUnitRequest!): TripStayUnit!
-	removeStayUnitFromItinerary(tripId: ID!, stayUnitId: ID!): RemoveStayUnitResponse!
+	addStayUnitToItinerary(
+		tripId: ID!
+		request: AddStayUnitRequest!
+	): TripStayUnit!
+	removeStayUnitFromItinerary(
+		tripId: ID!
+		stayUnitId: ID!
+	): RemoveStayUnitResponse!
 }
