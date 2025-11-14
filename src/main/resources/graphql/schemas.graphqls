@@ -154,6 +154,27 @@ type StayUnit {
 	stay: Stay
 }
 
+#TRIP STAY UNIT TYPES AND RESPONSES
+type TripStayUnit {
+	trip: Trip
+	stayUnit: StayUnit
+	startDate: Date!
+	endDate: Date!
+}
+type TripStayUnitsList {
+	tripStayUnits: [TripStayUnit!]!
+}
+type RemoveStayUnitResponse {
+	success: Boolean!
+	message: String!
+}
+#TRIP STAY UNIT INPUTS
+input AddStayUnitRequest {
+	stayUnitId: ID!
+	startDate: Date!
+	endDate: Date!
+}
+
 #QUERIES
 type Query {
 	#City queries
@@ -172,6 +193,7 @@ type Query {
 	getUser: User!
 	#Trip queries
 	getUserItineraries: TripsList!
+	getItineraryStayUnits(tripId: ID!): TripStayUnitsList!
 	#Stay queries
 	getStayById(id: ID!): Stay
 	getAllStays(page: Int, size: Int): StayPage!
@@ -200,4 +222,6 @@ type Mutation {
 	createItinerary(request: CreateTripRequest!): Trip!
 	updateItinerary(id: ID!, request: UpdateTripRequest!): Trip!
 	deleteItinerary(id: ID!): DeleteItineraryResponse!
+	addStayUnitToItinerary(tripId: ID!, request: AddStayUnitRequest!): TripStayUnit!
+	removeStayUnitFromItinerary(tripId: ID!, stayUnitId: ID!): RemoveStayUnitResponse!
 }
