@@ -53,6 +53,14 @@ dependencies {
 	testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
 	testImplementation("org.springframework.security:spring-security-test")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+	
+	// Kotest
+	testImplementation("io.kotest:kotest-runner-junit5:5.8.0")
+	testImplementation("io.kotest:kotest-assertions-core:5.8.0")
+	testImplementation("io.kotest:kotest-property:5.8.0")
+	testImplementation("io.mockk:mockk:1.13.9")
+	testImplementation("com.ninja-squad:springmockk:4.0.2")
+	testImplementation("org.springframework.graphql:spring-graphql-test")
 
 	// GraphQL
 	implementation("org.springframework.boot:spring-boot-starter-graphql")
