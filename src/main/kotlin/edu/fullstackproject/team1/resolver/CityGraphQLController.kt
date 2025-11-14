@@ -23,10 +23,10 @@ class CityGraphQLController(
 		@Argument country: Long?,
 		@Argument state: Long?,
 		@Argument featured: Boolean?,
-		@Argument page: Int = 0,
-		@Argument size: Int = 20,
+		@Argument page: Int?,
+		@Argument size: Int?,
 	): Page<CityResponse> {
-		val paginable = PageRequest.of(page, size)
+		val paginable = PageRequest.of(page ?: 0, size ?: 20)
 		return if (name != null || country != null || state != null || featured != null) {
 			cityService.searchCities(country, state, name, featured, paginable)
 		} else {

@@ -60,6 +60,7 @@ dependencies {
 	testImplementation("io.kotest:kotest-property:5.8.0")
 	testImplementation("io.mockk:mockk:1.13.9")
 	testImplementation("com.ninja-squad:springmockk:4.0.2")
+	testImplementation("org.springframework.graphql:spring-graphql-test")
 
 	// GraphQL
 	implementation("org.springframework.boot:spring-boot-starter-graphql")
