@@ -130,10 +130,12 @@ type Stay {
 	address: String!
 	latitude: Float!
 	longitude: Float!
+	description: String
 	city: City
 	stayType: StayType
 	services: [StayService!]
 	units: [StayUnit!]
+	images: [StayImage!]
 }
 type StayType {
 	id: ID!
@@ -152,6 +154,20 @@ type StayUnit {
 	pricePerNight: Float!
 	roomType: String!
 	stay: Stay
+}
+
+#STAY IMAGES
+type StayImage {
+	id: ID!
+	link: String!
+	stayId: ID!
+}
+input AddStayImageRequest {
+	link: String!
+}
+type DeleteImageResponse {
+	success: Boolean!
+	message: String!
 }
 
 #TRIP STAY UNIT TYPES AND RESPONSES
@@ -212,6 +228,8 @@ type Query {
 		page: Int
 		size: Int
 	): StayPage!
+	#StayImage queries
+	getImagesForStay(stayId: ID!): [StayImage!]!
 	#StayType queries
 	getStayTypeById(id: ID!): StayType
 	getAllStayTypes(name: String): [StayType!]!
@@ -247,4 +265,7 @@ type Mutation {
 		tripId: ID!
 		stayUnitId: ID!
 	): RemoveStayUnitResponse!
+	#StayImage mutations
+	addImageToStay(stayId: ID!, request: AddStayImageRequest!): StayImage!
+	deleteImageFromStay(stayId: ID!, imageId: ID!): DeleteImageResponse!
 }

@@ -48,7 +48,9 @@ class StayService(
 		val units = stayUnitRepository.findByStayId(id).map {
 			mapToStayUnitResponse(it, includeStay = false)
 		}
-		return mapToStayResponse(stay, includeRelations = true, services = services, units = units)
+		val images = stayImageRepository.findAllByStayId(stay.id!!)
+			.map { img -> StayImageResponse(img.id, img.link, img.stay.id) }
+		return mapToStayResponse(stay, includeRelations = true, services = services, units = units, images = images)
 	}
 	fun getStaysByCity(
 		cityId: Long,
