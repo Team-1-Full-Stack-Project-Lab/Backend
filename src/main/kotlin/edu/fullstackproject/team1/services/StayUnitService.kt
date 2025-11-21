@@ -88,6 +88,8 @@ class StayUnitService(
 			),
 			services = services,
 			units = null,
+			description = stay.description,
+			images = null,
 		)
 	}
 }

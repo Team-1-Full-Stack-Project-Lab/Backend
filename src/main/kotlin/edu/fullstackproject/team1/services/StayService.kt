@@ -2,10 +2,13 @@ package edu.fullstackproject.team1.services
 
 import edu.fullstackproject.team1.dtos.CityResponse
 import edu.fullstackproject.team1.dtos.ServiceResponse
+import edu.fullstackproject.team1.dtos.StayImageResponse
 import edu.fullstackproject.team1.dtos.StayResponse
 import edu.fullstackproject.team1.dtos.StayTypeResponse
 import edu.fullstackproject.team1.dtos.StayUnitResponse
 import edu.fullstackproject.team1.models.Stay
+import edu.fullstackproject.team1.models.StayImage
+import edu.fullstackproject.team1.repositories.StayImageRepository
 import edu.fullstackproject.team1.repositories.StayRepository
 import edu.fullstackproject.team1.repositories.StayServiceRepository
 import edu.fullstackproject.team1.repositories.StayUnitRepository
@@ -13,13 +16,15 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.Pageable
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.server.ResponseStatusException
 
 @Service
 class StayService(
 	private val stayRepository: StayRepository,
 	private val stayServiceRepository: StayServiceRepository,
-	private val stayUnitRepository: StayUnitRepository
+	private val stayUnitRepository: StayUnitRepository,
+	private val stayImageRepository: StayImageRepository,
 ) {
 	fun getAllStays(pageable: Pageable): Page<StayResponse> {
 		val stays = stayRepository.findAllWithCityAndType(pageable)
@@ -82,6 +87,7 @@ class StayService(
 		includeRelations: Boolean,
 		services: List<ServiceResponse>? = null,
 		units: List<StayUnitResponse>? = null,
+		images: List<StayImageResponse>? = null,
 	): StayResponse =
 		StayResponse(
 			id = stay.id,
@@ -113,6 +119,8 @@ class StayService(
 			} else { null },
 			services = services,
 			units = units,
+			description = stay.description,
+			images = images,
 		)
 	private fun mapToStayUnitResponse(
 		unit: edu.fullstackproject.team1.models.StayUnit,
@@ -131,4 +139,30 @@ class StayService(
 				null
 			},
 		)
+
+	fun getImagesForStay(stayId: Long): List<StayImageResponse> {
+		if (!stayRepository.existsById(stayId)) {
+			throw ResponseStatusException(HttpStatus.NOT_FOUND, "Stay not found with id $stayId") }
+		val images = stayImageRepository.findAllByStayId(stayId)
+		return images.map { img -> StayImageResponse(img.id, img.link, img.stay.id) }
+	}
+	fun addImageToStay(stayId: Long, link: String): StayImageResponse {
+		val stay = stayRepository.findById(stayId)
+			.orElseThrow { ResponseStatusException(HttpStatus.NOT_FOUND, "Stay not found with id $stayId") }
+		val existing = stayImageRepository.findAllByStayId(stayId).firstOrNull { it.link == link }
+		if (existing != null) {
+			return StayImageResponse(existing.id, existing.link, existing.stay.id) }
+		val img = StayImage(link = link, stay = stay)
+		val saved = stayImageRepository.save(img)
+		return StayImageResponse(saved.id, saved.link, saved.stay.id)
+	}
+	@Transactional
+	fun deleteImageFromStay(stayId: Long, imageId: Long) {
+		if (!stayRepository.existsById(stayId)) {
+			throw ResponseStatusException(HttpStatus.NOT_FOUND, "Stay not found with id $stayId") }
+		val existed = stayImageRepository.existsByIdAndStayId(imageId, stayId)
+		if (!existed) {
+			throw ResponseStatusException(HttpStatus.NOT_FOUND, "Image not found for this stay") }
+		stayImageRepository.deleteByIdAndStayId(imageId, stayId)
+	}
 }
