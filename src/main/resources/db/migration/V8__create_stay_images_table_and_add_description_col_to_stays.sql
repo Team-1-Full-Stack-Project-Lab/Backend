@@ -1,4 +1,4 @@
--- Crea las tablas stay_images y stay_unit_images, y añade la columna description a stays.
+-- Crea las tablas stay_images, y añade la columna description a stays.
 
 -- 1) Añade columna description a stays
 ALTER TABLE IF EXISTS stays

@@ -44,4 +44,10 @@ data class Stay(
 	val stayUnits: List<StayUnit> = emptyList(),
 	@OneToMany(mappedBy = "stay", fetch = FetchType.LAZY)
 	val stayServices: List<StayService> = emptyList(),
+
+	@Column(name = "description")
+	var description: String? = null,
+
+	@OneToMany(mappedBy = "stay", fetch = FetchType.LAZY)
+	val images: List<StayImage> = emptyList(),
 )

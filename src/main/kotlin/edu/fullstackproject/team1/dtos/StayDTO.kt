@@ -1,6 +1,7 @@
 package edu.fullstackproject.team1.dtos
 
 import com.fasterxml.jackson.annotation.JsonInclude
+import jakarta.validation.constraints.NotBlank
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 data class StayTypeResponse(
@@ -16,6 +17,19 @@ data class ServiceResponse(
 )
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
+data class StayImageResponse(
+	val id: Long?,
+	val link: String,
+	val stayId: Long?,
+)
+
+@JsonInclude(JsonInclude.Include.NON_NULL)
+data class AddStayImageRequest(
+	@field:NotBlank
+	val link: String
+)
+
+@JsonInclude(JsonInclude.Include.NON_NULL)
 data class StayResponse(
 	val id: Long?,
 	val name: String,
@@ -26,6 +40,8 @@ data class StayResponse(
 	val stayType: StayTypeResponse?,
 	val services: List<ServiceResponse>?,
 	val units: List<StayUnitResponse>?,
+	val description: String?,
+	val images: List<StayImageResponse>?,
 )
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
