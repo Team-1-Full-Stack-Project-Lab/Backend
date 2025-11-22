@@ -35,7 +35,9 @@ class StayService(
 			val units = stayUnitRepository.findByStayId(stay.id!!).map {
 				mapToStayUnitResponse(it, includeStay = false)
 			}
-			mapToStayResponse(stay, includeRelations = true, services = services, units = units)
+			val images = stayImageRepository.findAllByStayId(stay.id!!)
+				.map { img -> StayImageResponse(img.id, img.link, img.stay.id) }
+			mapToStayResponse(stay, includeRelations = true, services = services, units = units, images = images)
 		}
 	}
 	fun getStayById(id: Long): StayResponse {
@@ -64,7 +66,9 @@ class StayService(
 			val units = stayUnitRepository.findByStayId(stay.id!!).map {
 				mapToStayUnitResponse(it, includeStay = false)
 			}
-			mapToStayResponse(stay, includeRelations = true, services = services, units = units)
+			val images = stayImageRepository.findAllByStayId(stay.id!!)
+				.map { img -> StayImageResponse(img.id, img.link, img.stay.id) }
+			mapToStayResponse(stay, includeRelations = true, services = services, units = units, images = images)
 		}
 	}
 	fun searchStaysNearby(

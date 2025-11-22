@@ -4,27 +4,27 @@ BEGIN;
 
 -- 1) Añadir descripción para cada stay
 UPDATE stays
-SET description = 'Hotel clásico en el centro de Santiago con habitaciones confortables, desayuno incluido y piscina.'
+SET description = 'Classic hotel in downtown Santiago with comfortable rooms, breakfast included, and a pool.'
 WHERE name = 'Hotel Plaza San Francisco' AND (description IS NULL OR description = '');
 
 UPDATE stays
-SET description = 'Lujo y elegancia en el corazón de París. Servicio de primer nivel, decoración histórica y excelente ubicación.'
+SET description = 'Luxury and elegance in the heart of Paris. Top-tier service, historic décor, and an excellent location.'
 WHERE name = 'Le Meurice' AND (description IS NULL OR description = '');
 
 UPDATE stays
-SET description = 'Casa acogedora en Palermo, ideal para grupos o familias. Cocina equipada y barrio con vida nocturna y restaurantes.'
+SET description = 'Cozy house in Palermo, ideal for groups or families. Fully equipped kitchen and a neighborhood with nightlife and restaurants.'
 WHERE name = 'Palermo House' AND (description IS NULL OR description = '');
 
 UPDATE stays
-SET description = 'Casa frente a la playa en Bondi, perfecta para surfistas y viajeros que buscan sol. Espacios amplios y vista al mar.'
+SET description = 'Beachfront house in Bondi, perfect for surfers and travelers seeking sun. Spacious areas and ocean views.'
 WHERE name = 'Bondi Beach House' AND (description IS NULL OR description = '');
 
 UPDATE stays
-SET description = 'Cabaña junto al lago en Muskoka. Entorno natural, chimenea y actividades al aire libre.'
+SET description = 'Lakeside cabin in Muskoka. Natural surroundings, a fireplace, and outdoor activities.'
 WHERE name = 'Muskoka Lake Cabin' AND (description IS NULL OR description = '');
 
 UPDATE stays
-SET description = 'Cabaña en Cerro Alegre con vistas al océano. Barrio pintoresco, terrazas y acceso a actividades culturales.'
+SET description = 'Cabin in Cerro Alegre with ocean views. Picturesque neighborhood, terraces, and access to cultural activities.'
 WHERE name = 'Cerro Alegre Cabin' AND (description IS NULL OR description = '');
 
 -- 2) Insertar imágenes de ejemplo para cada stay
