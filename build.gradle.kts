@@ -4,6 +4,7 @@ plugins {
 	id("org.springframework.boot") version "3.5.6"
 	id("io.spring.dependency-management") version "1.1.7"
 	id("org.jlleitschuh.gradle.ktlint") version "13.1.0"
+	id("org.flywaydb.flyway") version "11.15.0"
 	kotlin("plugin.jpa") version "1.9.25"
 }
 
@@ -19,6 +20,13 @@ java {
 
 repositories {
 	mavenCentral()
+}
+
+buildscript {
+	dependencies {
+		classpath("org.flywaydb:flyway-database-postgresql:11.15.0")
+		classpath("org.postgresql:postgresql:42.7.4")
+	}
 }
 
 dependencies {
@@ -53,7 +61,7 @@ dependencies {
 	testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
 	testImplementation("org.springframework.security:spring-security-test")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
-	
+
 	// Kotest
 	testImplementation("io.kotest:kotest-runner-junit5:5.8.0")
 	testImplementation("io.kotest:kotest-assertions-core:5.8.0")
@@ -70,6 +78,16 @@ kotlin {
 	compilerOptions {
 		freeCompilerArgs.addAll("-Xjsr305=strict")
 	}
+}
+
+flyway {
+	driver = "org.postgresql.Driver"
+	url = System.getenv("DB_URL") ?: "jdbc:postgresql://localhost:5432/fullstack_project"
+	user = System.getenv("DB_USERNAME") ?: "postgres"
+	password = System.getenv("DB_PASSWORD") ?: ""
+	schemas = arrayOf("public")
+	locations = arrayOf("filesystem:src/main/resources/db/migration")
+	cleanDisabled = System.getenv("ENVIRONMENT") == "production"
 }
 
 allOpen {
