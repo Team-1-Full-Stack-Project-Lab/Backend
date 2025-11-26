@@ -38,5 +38,5 @@ data class TripStayUnit(
 
 	@UpdateTimestamp
 	@Column(nullable = false)
-	val updatedAt: Instant? = null
+	val updatedAt: Instant? = null,
 )

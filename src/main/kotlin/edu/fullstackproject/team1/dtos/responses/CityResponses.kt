@@ -1,4 +1,4 @@
-package edu.fullstackproject.team1.dtos
+package edu.fullstackproject.team1.dtos.responses
 
 import com.fasterxml.jackson.annotation.JsonInclude
 

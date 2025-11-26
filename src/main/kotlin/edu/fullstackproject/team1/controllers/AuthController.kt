@@ -1,8 +1,9 @@
 package edu.fullstackproject.team1.controllers
 
-import edu.fullstackproject.team1.dtos.AuthResponse
-import edu.fullstackproject.team1.dtos.LoginRequest
-import edu.fullstackproject.team1.dtos.RegisterRequest
+import edu.fullstackproject.team1.dtos.requests.LoginRequest
+import edu.fullstackproject.team1.dtos.requests.RegisterRequest
+import edu.fullstackproject.team1.dtos.responses.AuthResponse
+import edu.fullstackproject.team1.mappers.AuthMapper
 import edu.fullstackproject.team1.services.AuthService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Content
@@ -23,6 +24,7 @@ import org.springframework.web.bind.annotation.RestController
 @Tag(name = "Authentication", description = "User authentication and registration endpoints")
 class AuthController(
 	private val authService: AuthService,
+	private val authMapper: AuthMapper,
 ) {
 	@PostMapping("/login")
 	@Operation(
@@ -56,8 +58,8 @@ class AuthController(
 	fun login(
 		@RequestBody @Valid request: LoginRequest,
 	): ResponseEntity<AuthResponse> {
-		val response = authService.login(request)
-		return ResponseEntity.ok(response)
+		val token = authService.login(request.toCommand())
+		return ResponseEntity.ok(authMapper.toResponse(token))
 	}
 
 	@PostMapping("/register")
@@ -92,7 +94,7 @@ class AuthController(
 	fun register(
 		@RequestBody @Valid request: RegisterRequest,
 	): ResponseEntity<AuthResponse> {
-		val response = authService.register(request)
-		return ResponseEntity.status(HttpStatus.CREATED).body(response)
+		val token = authService.register(request.toCommand())
+		return ResponseEntity.status(HttpStatus.CREATED).body(authMapper.toResponse(token))
 	}
 }

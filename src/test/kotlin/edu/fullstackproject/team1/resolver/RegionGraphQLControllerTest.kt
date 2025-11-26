@@ -2,7 +2,7 @@ package edu.fullstackproject.team1.resolver
 
 import com.ninjasquad.springmockk.MockkBean
 import edu.fullstackproject.team1.config.GraphQLScalarConfig
-import edu.fullstackproject.team1.dtos.RegionResponse
+import edu.fullstackproject.team1.dtos.responses.RegionResponse
 import edu.fullstackproject.team1.services.RegionService
 import io.mockk.every
 import org.springframework.beans.factory.annotation.Autowired
