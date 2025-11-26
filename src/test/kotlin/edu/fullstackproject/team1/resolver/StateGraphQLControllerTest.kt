@@ -2,8 +2,8 @@ package edu.fullstackproject.team1.resolver
 
 import com.ninjasquad.springmockk.MockkBean
 import edu.fullstackproject.team1.config.GraphQLScalarConfig
-import edu.fullstackproject.team1.dtos.CountryResponse
-import edu.fullstackproject.team1.dtos.StateResponse
+import edu.fullstackproject.team1.dtos.responses.CountryResponse
+import edu.fullstackproject.team1.dtos.responses.StateResponse
 import edu.fullstackproject.team1.services.StateService
 import io.mockk.every
 import org.junit.jupiter.api.Test

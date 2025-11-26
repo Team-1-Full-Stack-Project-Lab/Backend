@@ -1,18 +1,16 @@
 package edu.fullstackproject.team1.controllers
 
-import edu.fullstackproject.team1.dtos.StayTypeResponse
+import edu.fullstackproject.team1.dtos.responses.StayTypeResponse
+import edu.fullstackproject.team1.mappers.StayTypeMapper
 import edu.fullstackproject.team1.services.StayTypeService
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestParam
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/stay-types")
 class StayTypeController(
 	private val stayTypeService: StayTypeService,
+	private val stayTypeMapper: StayTypeMapper,
 ) {
 	@GetMapping
 	fun getAllStayTypes(
@@ -24,7 +22,7 @@ class StayTypeController(
 			} else {
 				stayTypeService.getAllStayTypes()
 			}
-		return ResponseEntity.ok(stayTypes)
+		return ResponseEntity.ok(stayTypeMapper.toResponseList(stayTypes))
 	}
 
 	@GetMapping("/{id}")
@@ -32,6 +30,6 @@ class StayTypeController(
 		@PathVariable id: Long,
 	): ResponseEntity<StayTypeResponse> {
 		val stayType = stayTypeService.getStayTypeById(id)
-		return ResponseEntity.ok(stayType)
+		return ResponseEntity.ok(stayTypeMapper.toResponse(stayType))
 	}
 }

@@ -7,6 +7,4 @@ import org.springframework.stereotype.Repository
 @Repository
 interface StayImageRepository : JpaRepository<StayImage, Long> {
 	fun findAllByStayId(stayId: Long): List<StayImage>
-	fun existsByIdAndStayId(id: Long, stayId: Long): Boolean
-	fun deleteByIdAndStayId(id: Long, stayId: Long)
 }

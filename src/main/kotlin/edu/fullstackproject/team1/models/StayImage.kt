@@ -14,5 +14,5 @@ data class StayImage(
 
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "stay_id", nullable = false)
-	var stay: Stay
+	var stay: Stay,
 )

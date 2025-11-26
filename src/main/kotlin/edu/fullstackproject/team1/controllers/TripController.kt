@@ -1,10 +1,17 @@
 package edu.fullstackproject.team1.controllers
 
-import edu.fullstackproject.team1.dtos.*
+import edu.fullstackproject.team1.dtos.requests.AddStayUnitToTripRequest
+import edu.fullstackproject.team1.dtos.requests.CreateTripRequest
+import edu.fullstackproject.team1.dtos.requests.UpdateTripRequest
+import edu.fullstackproject.team1.dtos.responses.TripResponse
+import edu.fullstackproject.team1.dtos.responses.TripStayUnitResponse
+import edu.fullstackproject.team1.mappers.TripMapper
+import edu.fullstackproject.team1.mappers.TripStayUnitMapper
 import edu.fullstackproject.team1.services.TripService
 import edu.fullstackproject.team1.services.TripStayUnitService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
+import io.swagger.v3.oas.annotations.media.ArraySchema
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
@@ -23,8 +30,10 @@ import org.springframework.web.bind.annotation.*
 @Tag(name = "Trips & Itineraries", description = "Trip and itinerary management endpoints")
 @SecurityRequirement(name = "Bearer Authentication")
 class TripController(
-	val tripService: TripService,
-	val tripStayUnitService: TripStayUnitService,
+	private val tripService: TripService,
+	private val tripStayUnitService: TripStayUnitService,
+	private val tripMapper: TripMapper,
+	private val tripStayUnitMapper: TripStayUnitMapper,
 ) {
 	@PostMapping("/itineraries")
 	@Operation(
@@ -64,8 +73,8 @@ class TripController(
 		@AuthenticationPrincipal user: UserDetails,
 		@RequestBody @Valid request: CreateTripRequest,
 	): ResponseEntity<TripResponse> {
-		val response = tripService.createTrip(user.username, request)
-		return ResponseEntity.status(HttpStatus.CREATED).body(response)
+		val trip = tripService.createTrip(user.username, request.toCommand())
+		return ResponseEntity.status(HttpStatus.CREATED).body(tripMapper.toResponse(trip, true))
 	}
 
 	@GetMapping("/itineraries")
@@ -79,16 +88,7 @@ class TripController(
 				ApiResponse(
 					responseCode = "200",
 					description = "Itineraries retrieved successfully",
-					content =
-						[
-							Content(
-								schema =
-									Schema(
-										implementation =
-											TripsListResponse::class,
-									),
-							),
-						],
+					content = [Content(array = ArraySchema(schema = Schema(implementation = TripResponse::class)))],
 				),
 				ApiResponse(
 					responseCode = "401",
@@ -99,9 +99,9 @@ class TripController(
 	)
 	fun getUserItineraries(
 		@AuthenticationPrincipal user: UserDetails,
-	): ResponseEntity<TripsListResponse> {
-		val response = tripService.getUserTrips(user.username)
-		return ResponseEntity.ok(response)
+	): ResponseEntity<List<TripResponse>> {
+		val trips = tripService.getUserTrips(user.username)
+		return ResponseEntity.ok(tripMapper.toResponseList(trips, true))
 	}
 
 	@DeleteMapping("/itineraries/{id}")
@@ -136,9 +136,9 @@ class TripController(
 	fun deleteItinerary(
 		@AuthenticationPrincipal user: UserDetails,
 		@Parameter(description = "Itinerary ID") @PathVariable id: Long,
-	): ResponseEntity<Map<String, String>> {
+	): ResponseEntity<Void> {
 		tripService.deleteTrip(user.username, id)
-		return ResponseEntity.ok(mapOf("message" to "Itineraries deleted successfully"))
+		return ResponseEntity.noContent().build()
 	}
 
 	@PutMapping("/itineraries/{id}")
@@ -190,8 +190,8 @@ class TripController(
 		@Parameter(description = "Itinerary ID") @PathVariable id: Long,
 		@RequestBody @Valid request: UpdateTripRequest,
 	): ResponseEntity<TripResponse> {
-		val response = tripService.updateTrip(user.username, id, request)
-		return ResponseEntity.ok(response)
+		val trip = tripService.updateTrip(user.username, id, request.toCommand())
+		return ResponseEntity.ok(tripMapper.toResponse(trip, true))
 	}
 
 	@GetMapping("/itineraries/{id}/stayunits")
@@ -204,7 +204,7 @@ class TripController(
 			ApiResponse(
 				responseCode = "200",
 				description = "Stay units retrieved successfully",
-				content = [Content(schema = Schema(implementation = TripStayUnitsListResponse::class))]
+				content = [Content(array = ArraySchema(schema = Schema(implementation = TripStayUnitResponse::class)))]
 			),
 			ApiResponse(responseCode = "401", description = "Unauthorized", content = [Content()]),
 			ApiResponse(responseCode = "404", description = "Itinerary not found", content = [Content()])
@@ -213,9 +213,9 @@ class TripController(
 	fun getItineraryStayUnits(
 		@AuthenticationPrincipal user: UserDetails,
 		@Parameter(description = "Itinerary ID") @PathVariable id: Long
-	): ResponseEntity<TripStayUnitsListResponse> {
-		val stayUnits = tripStayUnitService.getStayUnitsForTrip(id)
-		return ResponseEntity.ok(stayUnits)
+	): ResponseEntity<List<TripStayUnitResponse>> {
+		val tripStayUnits = tripStayUnitService.getStayUnitsForTrip(user.username, id)
+		return ResponseEntity.ok(tripStayUnitMapper.toResponseList(tripStayUnits, true))
 	}
 
 	@PostMapping("/itineraries/{id}/stayunits")
@@ -238,15 +238,10 @@ class TripController(
 	fun addStayUnitToItinerary(
 		@AuthenticationPrincipal user: UserDetails,
 		@Parameter(description = "Itinerary ID") @PathVariable id: Long,
-		@RequestBody @Valid request: AddStayUnitRequest
+		@RequestBody @Valid request: AddStayUnitToTripRequest
 	): ResponseEntity<TripStayUnitResponse> {
-		val tripStayUnit = tripStayUnitService.addStayUnitToTrip(
-			tripId = id,
-			stayUnitId = request.stayUnitId,
-			startDate = request.startDate,
-			endDate = request.endDate
-		)
-		return ResponseEntity.status(HttpStatus.CREATED).body(tripStayUnit)
+		val tripStayUnit = tripStayUnitService.addStayUnitToTrip(user.username, request.toCommand(id))
+		return ResponseEntity.status(HttpStatus.CREATED).body(tripStayUnitMapper.toResponse(tripStayUnit, true))
 	}
 
 	@DeleteMapping("/itineraries/{tripId}/stayunits/{stayUnitId}")
@@ -265,8 +260,8 @@ class TripController(
 		@AuthenticationPrincipal user: UserDetails,
 		@Parameter(description = "Trip ID") @PathVariable tripId: Long,
 		@Parameter(description = "Stay Unit ID") @PathVariable stayUnitId: Long
-	): ResponseEntity<Map<String, String>> {
-		tripStayUnitService.removeStayUnitFromTrip(tripId, stayUnitId)
-		return ResponseEntity.ok(mapOf("message" to "Stay unit removed successfully"))
+	): ResponseEntity<Void> {
+		tripStayUnitService.removeStayUnitFromTrip(user.username, tripId, stayUnitId)
+		return ResponseEntity.noContent().build()
 	}
 }

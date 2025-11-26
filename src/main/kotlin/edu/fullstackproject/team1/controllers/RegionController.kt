@@ -1,18 +1,16 @@
 package edu.fullstackproject.team1.controllers
 
-import edu.fullstackproject.team1.dtos.RegionResponse
+import edu.fullstackproject.team1.dtos.responses.RegionResponse
+import edu.fullstackproject.team1.mappers.RegionMapper
 import edu.fullstackproject.team1.services.RegionService
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestParam
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/regions")
 class RegionController(
 	private val regionService: RegionService,
+	private val regionMapper: RegionMapper,
 ) {
 	@GetMapping
 	fun getRegions(
@@ -20,7 +18,7 @@ class RegionController(
 	): ResponseEntity<List<RegionResponse>> {
 		val regions = if (name != null) regionService.getRegionsByName(name) else regionService.getAllRegions()
 
-		return ResponseEntity.ok(regions)
+		return ResponseEntity.ok(regionMapper.toResponseList(regions))
 	}
 
 	@GetMapping("/{id}")
@@ -29,6 +27,6 @@ class RegionController(
 	): ResponseEntity<RegionResponse> {
 		val region = regionService.getRegionById(id)
 
-		return ResponseEntity.ok(region)
+		return ResponseEntity.ok(regionMapper.toResponse(region, true))
 	}
 }

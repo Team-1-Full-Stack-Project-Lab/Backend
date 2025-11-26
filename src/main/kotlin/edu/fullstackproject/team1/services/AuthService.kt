@@ -1,9 +1,8 @@
 package edu.fullstackproject.team1.services
 
-import edu.fullstackproject.team1.dtos.AuthResponse
-import edu.fullstackproject.team1.dtos.LoginRequest
-import edu.fullstackproject.team1.dtos.RegisterRequest
-import edu.fullstackproject.team1.models.User
+import edu.fullstackproject.team1.dtos.commands.LoginCommand
+import edu.fullstackproject.team1.dtos.commands.RegisterCommand
+import edu.fullstackproject.team1.mappers.AuthMapper
 import edu.fullstackproject.team1.repositories.UserRepository
 import org.springframework.http.HttpStatus
 import org.springframework.security.authentication.AuthenticationManager
@@ -19,34 +18,28 @@ class AuthService(
 	private val passwordEncoder: PasswordEncoder,
 	private val jwtService: JwtService,
 	private val authenticationManager: AuthenticationManager,
+	private val authMapper: AuthMapper,
 ) {
-	fun login(request: LoginRequest): AuthResponse {
+	fun login(command: LoginCommand): String {
 		authenticationManager.authenticate(
-			UsernamePasswordAuthenticationToken(request.email, request.password),
+			UsernamePasswordAuthenticationToken(command.email, command.password),
 		)
 		val user =
-			userRepository.findByEmail(request.email)
+			userRepository.findByEmail(command.email)
 				?: throw BadCredentialsException("Invalid credentials")
 
-		val token = jwtService.generateToken(user)
-		return AuthResponse(token)
+		return jwtService.generateToken(user)
 	}
 
-	fun register(request: RegisterRequest): AuthResponse {
-		if (userRepository.findByEmail(request.email) != null) {
+	fun register(command: RegisterCommand): String {
+		if (userRepository.findByEmail(command.email) != null) {
 			throw ResponseStatusException(HttpStatus.CONFLICT, "A user with that email already exists")
 		}
 
-		val user =
-			User(
-				email = request.email,
-				firstName = request.firstName,
-				lastName = request.lastName,
-				password = passwordEncoder.encode(request.password),
-			)
+		val encodedPassword = passwordEncoder.encode(command.password)
+		val user = authMapper.toEntity(command, encodedPassword)
 		val savedUser = userRepository.save(user)
-		val token = jwtService.generateToken(savedUser)
 
-		return AuthResponse(token)
+		return jwtService.generateToken(savedUser)
 	}
 }

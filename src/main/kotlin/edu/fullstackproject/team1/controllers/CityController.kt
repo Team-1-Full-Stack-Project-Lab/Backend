@@ -1,6 +1,7 @@
 package edu.fullstackproject.team1.controllers
 
-import edu.fullstackproject.team1.dtos.CityResponse
+import edu.fullstackproject.team1.dtos.responses.CityResponse
+import edu.fullstackproject.team1.mappers.CityMapper
 import edu.fullstackproject.team1.services.CityService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
@@ -8,17 +9,14 @@ import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestParam
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/cities")
 @Tag(name = "Geographic - Cities", description = "City information and search endpoints")
 class CityController(
 	private val cityService: CityService,
+	private val cityMapper: CityMapper,
 ) {
 	@GetMapping
 	@Operation(
@@ -54,7 +52,7 @@ class CityController(
 				cityService.getAllCities(paginable)
 			}
 
-		return ResponseEntity.ok(cities)
+		return ResponseEntity.ok(cityMapper.toResponsePage(cities, true))
 	}
 
 	@GetMapping("/{id}")
@@ -67,6 +65,6 @@ class CityController(
 	): ResponseEntity<CityResponse> {
 		val city = cityService.getCityById(id)
 
-		return ResponseEntity.ok(city)
+		return ResponseEntity.ok(cityMapper.toResponse(city, true))
 	}
 }
