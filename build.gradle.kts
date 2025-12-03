@@ -1,11 +1,12 @@
 plugins {
-	kotlin("jvm") version "1.9.25"
-	kotlin("plugin.spring") version "1.9.25"
+	kotlin("jvm") version "2.2.10"
+	kotlin("plugin.spring") version "2.2.10"
+	kotlin("plugin.serialization") version "2.2.0"
 	id("org.springframework.boot") version "3.5.6"
 	id("io.spring.dependency-management") version "1.1.7"
 	id("org.jlleitschuh.gradle.ktlint") version "13.1.0"
 	id("org.flywaydb.flyway") version "11.15.0"
-	kotlin("plugin.jpa") version "1.9.25"
+	kotlin("plugin.jpa") version "2.2.10"
 }
 
 group = "edu.fullstackproject"
@@ -15,6 +16,25 @@ description = "Full stack web application developed by Team 1"
 java {
 	toolchain {
 		languageVersion = JavaLanguageVersion.of(21)
+	}
+}
+
+configurations {
+	compileOnly {
+		extendsFrom(configurations.annotationProcessor.get())
+	}
+}
+
+configurations.all {
+	resolutionStrategy {
+		eachDependency {
+			if (requested.group == "org.jetbrains.kotlinx" && requested.name.startsWith("kotlinx-serialization")) {
+				useVersion("1.8.1")
+			}
+			if (requested.group == "org.jetbrains.kotlinx" && requested.name.startsWith("kotlinx-coroutines")) {
+				useVersion("1.10.2")
+			}
+		}
 	}
 }
 
@@ -35,6 +55,16 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-security")
 	implementation("org.springframework.boot:spring-boot-starter-validation")
 	implementation("org.springframework.boot:spring-boot-starter-web")
+
+	//Koog
+	implementation("ai.koog:koog-spring-boot-starter:0.5.3")
+
+	//Coroutines
+	implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.10.2")
+
+	//Serialization
+	implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.1")
+	implementation("org.jetbrains.kotlinx:kotlinx-serialization-core:1.8.1")
 
 	// Kotlin
 	implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
