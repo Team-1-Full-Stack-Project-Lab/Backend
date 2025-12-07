@@ -3,6 +3,7 @@ package edu.fullstackproject.team1.tool
 import ai.koog.agents.core.tools.annotations.LLMDescription
 import ai.koog.agents.core. tools.annotations.Tool
 import edu.fullstackproject.team1.services.CityService
+import edu.fullstackproject.team1.services.StayImageService
 import edu. fullstackproject.team1. services.StayService
 import java.time.LocalDate
 import kotlinx.serialization.Serializable
@@ -12,7 +13,8 @@ import org. springframework.stereotype.Component
 @Component
 class AgentTools(
 	private val cityService: CityService,
-	private val stayService: StayService
+	private val stayService: StayService,
+	private val stayImageService: StayImageService
 ) {
 	@Serializable
 	data class CityInfo(
@@ -25,8 +27,12 @@ class AgentTools(
 
 	@Serializable
 	data class StayInfo(
+		val id: Long,
 		val name: String,
 		val address: String,
+		val latitude: Double,
+		val longitude: Double,
+		val imageUrl: String?,
 		val cityName: String,
 		val cityLatitude: Double,
 		val cityLongitude: Double,
@@ -77,8 +83,12 @@ class AgentTools(
 		Obtiene todos los hoteles (stays) disponibles en el sistema con información detallada de su ubicación.
 
 		INFORMACIÓN RETORNADA:
+		- id: ID único del hotel
 		- name: Nombre del hotel
 		- address: Dirección del hotel
+		- latitude: Latitud exacta del hotel
+		- longitude: Longitud exacta del hotel
+		- imageUrl: URL de la primera imagen del hotel (puede ser null)
 		- cityName: Ciudad donde se encuentra
 		- countryName: País donde se encuentra
 		- cityLatitude: Latitud de la ciudad (para análisis climático)
@@ -98,18 +108,39 @@ class AgentTools(
 		- Tipo de destino solicitado (playa, montaña, ciudad, etc.)
 		- Estación del año basada en la fecha y hemisferio
 		- Cualquier otro criterio mencionado por el usuario
+
+		IMPORTANTE: Cuando devuelvas hoteles al usuario, debes retornar:
+		1. Un mensaje conversacional explicando los resultados
+		2. Un array JSON con los hoteles filtrados en este formato:
+		   [{"id": 1, "name": ".. .", "address": ".. .", "latitude": X, "longitude": Y, "imageUrl": "..."}, ...]
+
+		Incluye SOLO los campos: id, name, address, latitude, longitude en el JSON de respuesta.
 	""")
 	fun getAllHotels(): List<StayInfo> {
 		val pageable = PageRequest.of(0, 50)
 		return stayService.getAllStays(pageable). content.map { stay ->
+			val stayId = stay.id
+			val firstImage = if (stayId != null) {
+				try {
+					stayImageService. getAllStayImages()
+						.firstOrNull { it.stay?.id == stayId }
+						?.link
+				} catch (e: Exception) {
+					null
+				}
+			} else null
 			StayInfo(
+				id = stay.id ?: 0,
 				name = stay.name,
 				address = stay.address,
-				cityName = stay.city?.name ?: "N/A",
-				cityLatitude = stay. city?.latitude ?: 0.0,
+				latitude = stay.latitude ?: stay.city?. latitude ?: 0.0,  // lat del hotel si existe
+				longitude = stay.longitude ?: stay.city?.longitude ?: 0.0,
+				imageUrl = firstImage,
+				cityName = stay.city?. name ?: "N/A",
+				cityLatitude = stay.city?.latitude ?: 0.0,
 				cityLongitude = stay.city?.longitude ?: 0.0,
-				cityIsCapital = stay.city?. isCapital ?: false,
-				cityPopulation = stay.city?.population
+				cityIsCapital = stay.city?.isCapital ?: false,
+				cityPopulation = stay.city?. population
 			)
 		}
 	}
@@ -128,6 +159,8 @@ class AgentTools(
 		- El usuario pregunta específicamente por hoteles en una ciudad conocida
 		- Ya identificaste una ciudad de interés y necesitas sus hoteles
 		- Quieres información detallada de hoteles en una ubicación específica
+
+		Retorna la misma información que getAllHotels() pero filtrado por ciudad.
 	""")
 	fun getHotelsByCity(
 		@LLMDescription("Nombre de la ciudad para la cual se desea obtener los hoteles")
@@ -145,10 +178,24 @@ class AgentTools(
 		val stays = stayService.getStaysByCity(cityId, pageable)
 
 		return stays.content.map { stay ->
+			val stayId = stay.id
+			val firstImage = if (stayId != null) {
+				try {
+					stayImageService. getAllStayImages()
+						.firstOrNull { it.stay?.id == stayId }
+						?.link
+				} catch (e: Exception) {
+					null
+				}
+			} else null
 			StayInfo(
+				id = stay.id ?: 0,
 				name = stay.name,
 				address = stay.address,
-				cityName = stay.city?.name ?: cityName,
+				latitude = stay.latitude ?: stay.city?.latitude ?: 0.0,
+				longitude = stay.longitude ?: stay.city?.longitude ?: 0.0,
+				imageUrl = firstImage,
+				cityName = stay. city?.name ?: cityName,
 				cityLatitude = stay.city?. latitude ?: 0.0,
 				cityLongitude = stay.city?.longitude ?: 0.0,
 				cityIsCapital = stay.city?.isCapital ?: false,

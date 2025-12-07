@@ -6,7 +6,10 @@ import ai.koog.agents.core.tools.reflect.tool
 import ai.koog.prompt.executor.clients.google.GoogleLLMClient
 import ai.koog.prompt.executor.llms.SingleLLMPromptExecutor
 import edu.fullstackproject.team1.config.AgentConfig
+import edu.fullstackproject.team1.dtos.responses.ChatResponse
+import edu.fullstackproject.team1.dtos.responses.HotelData
 import edu.fullstackproject.team1.tool.AgentTools
+import kotlinx.serialization.json.Json
 import org.springframework.stereotype.Service
 
 @Service
@@ -19,6 +22,11 @@ class AgentService(
 	)
 
 	private val executor = SingleLLMPromptExecutor(client)
+
+	private val json = Json{
+		ignoreUnknownKeys = true
+		isLenient = true
+	}
 
 	private fun createAgent(): AIAgent<String, String> {
 		return AIAgent(
@@ -40,12 +48,58 @@ class AgentService(
 		}
 	}
 
-	suspend fun processMessage(message: String): String {
+	suspend fun processMessage(message: String): ChatResponse {
 		val agent = createAgent()
 		return try {
-			agent.run(message)
+			val agentResponse = agent.run(message)
+			parseAgentResponse(agentResponse)
 		} catch (e: Exception) {
-			"Error: ${e.message}"
+			e.printStackTrace()
+			ChatResponse(
+				response = "Error procesando tu solicitud: ${e.message}",
+				hotels = null
+			)
+		}
+	}
+	private fun parseAgentResponse(response: String): ChatResponse {
+		val marker = "###HOTELS_DATA###"
+
+		return if (response.contains(marker)) {
+			val parts = response.split(marker, limit = 2)
+
+			if (parts.size == 2) {
+				val message = parts[0].trim()
+				val jsonPart = parts[1].trim()
+
+				val hotels = try {
+					val cleanJson = jsonPart
+						.removePrefix("```json")
+						. removePrefix("```")
+						.removeSuffix("```")
+						.trim()
+					json.decodeFromString<List<HotelData>>(cleanJson)
+				} catch (e: Exception) {
+					println("Error parsing JSON: ${e.message}")
+					e.printStackTrace()
+					null
+				}
+
+				ChatResponse(
+					response = message. ifEmpty { "Aquí están los hoteles encontrados:" },
+					hotels = hotels
+				)
+			} else {
+				ChatResponse(
+					response = response. replace(marker, ""). trim(),
+					hotels = null
+				)
+			}
+		} else {
+			ChatResponse(
+				response = response.trim(),
+				hotels = null
+			)
 		}
 	}
 }
+

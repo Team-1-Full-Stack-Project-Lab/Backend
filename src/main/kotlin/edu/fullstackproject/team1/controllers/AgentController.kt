@@ -17,10 +17,12 @@ class AgentController(
 	suspend fun chatWithAgent(@RequestBody request: ChatRequest): ResponseEntity<ChatResponse> {
 		return try {
 			val response = agentService.processMessage(request.message)
-			ResponseEntity.ok(ChatResponse(response))
+			ResponseEntity.ok(response)
 		} catch (e: Exception) {
 			ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-				.body(ChatResponse("Error processing request: ${e.message}"))
+				.body(ChatResponse(
+					"Error processing request: ${e.message}",
+					null))
 		}
 	}
 }
