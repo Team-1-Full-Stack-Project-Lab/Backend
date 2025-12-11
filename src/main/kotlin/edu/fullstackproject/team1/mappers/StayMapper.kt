@@ -14,13 +14,28 @@ class StayMapper(
 	@Lazy private val stayUnitMapper: StayUnitMapper,
 	@Lazy private val stayImageMapper: StayImageMapper,
 ) {
-	fun toResponse(stay: Stay, includeRelations: Boolean = false): StayResponse {
+	fun toResponse(
+		stay: Stay,
+		includeRelations: Boolean = false,
+		minPrice: Double? = null,
+		maxPrice: Double? = null
+	): StayResponse {
 		val cityResp =
 			if (includeRelations) cityMapper.toResponse(stay.city, includeRelations = false) else null
 		val stayTypeResp = if (includeRelations) stayTypeMapper.toResponse(stay.stayType) else null
 		val services = stay.stayServices.map { it.service }
 		val servicesResp = if (includeRelations) serviceMapper.toResponseList(services) else null
-		val unitsResp = if (includeRelations) stayUnitMapper.toResponseList(stay.stayUnits) else null
+
+		val unitsToMap = if (minPrice != null || maxPrice != null) {
+			stay.stayUnits.filter { unit ->
+				(minPrice == null || unit.pricePerNight >= minPrice) &&
+				(maxPrice == null || unit.pricePerNight <= maxPrice)
+			}
+		} else {
+			stay.stayUnits
+		}
+
+		val unitsResp = if (includeRelations) stayUnitMapper.toResponseList(unitsToMap) else null
 		val imagesResp = if (includeRelations) stayImageMapper.toResponseList(stay.images) else null
 
 		return StayResponse(
@@ -38,9 +53,19 @@ class StayMapper(
 		)
 	}
 
-	fun toResponseList(stays: List<Stay>, includeRelations: Boolean = false): List<StayResponse> =
-		stays.map { toResponse(it, includeRelations) }
+	fun toResponseList(
+		stays: List<Stay>,
+		includeRelations: Boolean = false,
+		minPrice: Double? = null,
+		maxPrice: Double? = null
+	): List<StayResponse> =
+		stays.map { toResponse(it, includeRelations, minPrice, maxPrice) }
 
-	fun toResponsePage(stays: Page<Stay>, includeRelations: Boolean = false): Page<StayResponse> =
-		stays.map { toResponse(it, includeRelations) }
+	fun toResponsePage(
+		stays: Page<Stay>,
+		includeRelations: Boolean = false,
+		minPrice: Double? = null,
+		maxPrice: Double? = null
+	): Page<StayResponse> =
+		stays.map { toResponse(it, includeRelations, minPrice, maxPrice) }
 }
