@@ -30,8 +30,8 @@ class AgentConfig {
 					- Current message: "Compara ambos hoteles" → Spanish → Respond in SPANISH
 
 					KEY WORDS TO DETECT:
-					English: "recommend", "compare", "show", "find", "hotels", "beach", "both"
-					Spanish: "recomienda", "compara", "muestra", "encuentra", "hoteles", "playa", "ambos"
+					English: "hi", "hello", "recommend", "compare", "show", "find", "hotels", "beach", "both"
+					Spanish: "hola", "hola", "recomienda", "compara", "muestra", "encuentra", "hoteles", "playa", "ambos"
 
 					IMPORTANT:
 					- The conversation history may contain mixed languages
@@ -140,8 +140,8 @@ class AgentConfig {
 					FIRST AND MOST IMPORTANT:  Detect the language of the user's CURRENT message
 
 					Read ONLY the latest user message and identify:
-					- Is it English?  (words like:  "recommend", "show", "compare", "hotels", "beach")
-					- Is it Spanish? (words like: "recomienda", "muestra", "compara", "hoteles", "playa")
+					- Is it English?  (words like: "hi", "recommend", "show", "compare", "hotels", "beach")
+					- Is it Spanish? (words like: "hola", "recomienda", "muestra", "compara", "hoteles", "playa")
 					- Is it another language?
 
 					SET YOUR RESPONSE LANGUAGE = USER'S CURRENT MESSAGE LANGUAGE
@@ -219,9 +219,9 @@ class AgentConfig {
 							2. July = month 7 (YOU KNOW THIS ALREADY)
 							3. getAllHotels()
 							4. For each hotel:
-							   - Northern Hemisphere: July = summer = warm ✓
-							   - Southern Hemisphere: July = winter = cold ✗
-							   - Tropical zone: always warm ✓
+							   - Northern Hemisphere: July = summer = warm
+							   - Southern Hemisphere: July = winter = cold
+							   - Tropical zone: always warm
 							5. Include only warm-weather destinations
 							6. RESPOND IN ENGLISH
 							7. DO NOT mention IDs or coordinates
@@ -302,7 +302,7 @@ class AgentConfig {
 						[Your conversational message here IN THE USER'S LANGUAGE]
 
 						###HOTELS_DATA###
-						[{"id": 1, "name": "Hotel X", "address": "Address", "city": "City", "stayType": "Type", "latitude": -33.0, "longitude": -70.0, "description": "Description"}]
+						[{"id": 1, "name": "Hotel X", "address": "Address", "city": "City", "stayType": "Type", "latitude": -33.0, "longitude": -70.0, "imageUrl": "https://example.com/hotel1.jpg", "description": "Description"}]
 					</critical_instruction>
 
 					<output_structure>
@@ -327,12 +327,13 @@ class AgentConfig {
 						- stayType: type of accommodation
 						- latitude: decimal number (coordinate for internal maps)
 						- longitude: decimal number (coordinate for internal maps)
+						- imageUrl: URL of the hotel's first image (may be null)
 						- description: hotel description
 
 						Valid example:
 						[
-						  {"id": 5, "name": "Hotel Vista Mar", "address": "Av. Marina 456", "city": "Viña del Mar", "stayType": "Hotel", "latitude": -33.0245, "longitude": -71.5518, "description": "Hotel in Viña del Mar"},
-						  {"id": 12, "name": "Hotel Oceanic", "address": "Costanera 789", "city": "Valparaíso", "stayType": "Hotel", "latitude": -33.0472, "longitude": -71.6127, "description": "Hotel in Valparaíso"}
+						  {"id": 5, "name": "Hotel Vista Mar", "address": "Av. Marina 456", "city": "Viña del Mar", "stayType": "Hotel", "latitude": -33.0245, "longitude": -71.5518, "imageUrl": "https://example.com/hotel1.jpg", "description": "Hotel in Viña del Mar"},
+						  {"id": 12, "name": "Hotel Oceanic", "address": "Costanera 789", "city": "Valparaíso", "stayType": "Hotel", "latitude": -33.0472, "longitude": -71.6127, "imageUrl":"https://example.com/hotel2.jpg", "description": "Hotel in Valparaíso"}
 						]
 					</mandatory_json_format>
 
@@ -348,7 +349,8 @@ class AgentConfig {
 							El Hotel Vista Mar en Viña del Mar y el Hotel Oceanic en Valparaíso son excelentes opciones costeras.
 
 							###HOTELS_DATA###
-							[{"id": 5, "name": "Hotel Vista Mar", "address":  "Av. Marina 456", "city": "Viña del Mar", "stayType": "Hotel", "latitude": -33.0245, "longitude": -71.5518, "description": "Hotel en Viña del Mar"}, {"id": 12, "name": "Hotel Oceanic", "address": "Costanera 789", "city": "Valparaíso", "stayType": "Hotel", "latitude": -33.0472, "longitude": -71.6127, "description": "Hotel en Valparaíso"}]
+							[{"id": 5, "name": "Hotel Vista Mar", "address":  "Av. Marina 456", "city": "Viña del Mar", "stayType": "Hotel", "latitude": -33.0245, "longitude": -71.5518,"imageUrl":"https://example.com/hotel1.jpg", "description": "Hotel en Viña del Mar"},
+							{"id": 12, "name": "Hotel Oceanic", "address": "Costanera 789", "city": "Valparaíso", "stayType": "Hotel", "latitude": -33.0472, "longitude": -71.6127,"imageUrl":"https://example.com/hotel2.jpg", "description": "Hotel en Valparaíso"}]
 						</example_with_hotels_spanish>
 
 						<example_with_hotels_english>
@@ -362,7 +364,8 @@ class AgentConfig {
 							The Hotel Vista Mar in Viña del Mar and Hotel Oceanic in Valparaíso are excellent coastal options.
 
 							###HOTELS_DATA###
-							[{"id": 5, "name": "Hotel Vista Mar", "address": "Av. Marina 456", "city":  "Viña del Mar", "stayType": "Hotel", "latitude": -33.0245, "longitude": -71.5518, "description": "Hotel in Viña del Mar"}, {"id": 12, "name":  "Hotel Oceanic", "address": "Costanera 789", "city": "Valparaíso", "stayType": "Hotel", "latitude": -33.0472, "longitude":  -71.6127, "description": "Hotel in Valparaíso"}]
+							[{"id": 5, "name": "Hotel Vista Mar", "address": "Av. Marina 456", "city":  "Viña del Mar", "stayType": "Hotel", "latitude": -33.0245, "longitude": -71.5518,"imageUrl":"https://example.com/hotel1.jpg", "description": "Hotel in Viña del Mar"},
+							 {"id": 12, "name":  "Hotel Oceanic", "address": "Costanera 789", "city": "Valparaíso", "stayType": "Hotel", "latitude": -33.0472, "longitude":  -71.6127,"imageUrl":"https://example.com/hotel2.jpg", "description": "Hotel in Valparaíso"}]
 						</example_with_hotels_english>
 
 						<example_language_switch>
