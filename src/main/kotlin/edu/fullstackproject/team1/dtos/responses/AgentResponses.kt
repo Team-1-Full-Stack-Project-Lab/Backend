@@ -5,6 +5,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class ChatResponse(
 	val response: String,
+	val sessionId: String,
 	val hotels: List<HotelData>? = null
 )
 
@@ -16,4 +17,10 @@ data class HotelData(
 	val latitude: Double,
 	val longitude: Double,
 	val imageUrl: String? = null
+)
+
+data class ConversationMessage(
+	val role: String, // "user" o "assistant"
+	val content: String,
+	val timestamp: Long = System.currentTimeMillis()
 )

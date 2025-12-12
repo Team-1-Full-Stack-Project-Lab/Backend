@@ -42,36 +42,35 @@ class AgentTools(
 
 	@Tool
 	@LLMDescription("""
-		Obtiene todas las ciudades disponibles en la base de datos con información geográfica detallada.
+		Retrieves all available cities in the database with detailed geographic information.
 
-		INFORMACIÓN RETORNADA:
-		- name: Nombre de la ciudad
-		- country: Nombre del país
-		- latitude: Latitud de la ciudad (útil para determinar clima y hemisferio)
-		- longitude: Longitud de la ciudad
-		- isCapital: Si es ciudad capital
-		- population: Población de la ciudad
+		RETURNED INFORMATION:
+		- name: City name
+		- latitude: City latitude (useful for determining climate and hemisphere)
+		- longitude: City longitude
+		- isCapital: Whether it is a capital city
+		- population: City population
 
-		CÓMO INTERPRETAR LOS DATOS:
-		- Latitud negativa: Hemisferio Sur (verano: dic-feb, invierno: jun-ago)
-		- Latitud positiva: Hemisferio Norte (verano: jun-ago, invierno: dic-feb)
-		- Latitud entre -23.5 y 23.5: Zona Tropical (cálido todo el año)
-		- Latitud entre ±23.5 y ±35: Zona Subtropical
-		- Latitud entre ±35 y ±50: Zona Templada
-		- Latitud entre ±50 y ±66. 5: Zona Fría
-		- Latitud mayor a ±66.5: Zona Polar
-		- Ciudades con nombres que contienen "viña", "valparaíso", "mar", "costa", "beach", "bay", "puerto", "port", "playa" suelen ser costeras
-		- Ciudades cercanas a océanos (longitud cerca de costas continentales) pueden ser costeras
+		HOW TO INTERPRET THE DATA:
+		- Negative latitude: Southern Hemisphere (summer: Dec–Feb, winter: Jun–Aug)
+		- Positive latitude: Northern Hemisphere (summer: Jun–Aug, winter: Dec–Feb)
+		- Latitude between -23.5 and 23.5: Tropical Zone (warm year-round)
+		- Latitude between ±23.5 and ±35: Subtropical Zone
+		- Latitude between ±35 and ±50: Temperate Zone
+		- Latitude between ±50 and ±66.5: Cold Zone
+		- Latitude greater than ±66.5: Polar Zone
+		- Cities with names containing “viña”, “valparaíso”, “mar”, “costa”, “beach”, “bay”, “puerto”, “port”, “playa” are often coastal
+		- Cities near oceans (longitude close to continental coasts) may be coastal
 
-		Usa esta información para responder preguntas sobre ubicaciones, climas y tipos de ciudades.
+		Use this information to answer questions about locations, climates, and types of cities.
 	""")
 	fun getCities(): List<CityInfo> {
-		val pageable = PageRequest. of(0, 50)
+		val pageable = PageRequest.of(0, 50)
 		return cityService.getAllCities(pageable).map { city ->
 			CityInfo(
 				name = city.name,
-				latitude = city. latitude,
-				longitude = city. longitude,
+				latitude = city.latitude,
+				longitude = city.longitude,
 				isCapital = city.isCapital,
 				population = city.population
 			)
@@ -80,41 +79,41 @@ class AgentTools(
 
 	@Tool
 	@LLMDescription("""
-		Obtiene todos los hoteles (stays) disponibles en el sistema con información detallada de su ubicación.
+		Obtains all hotels (stays) available in the system with detailed information about their location.
 
-		INFORMACIÓN RETORNADA:
-		- id: ID único del hotel
-		- name: Nombre del hotel
-		- address: Dirección del hotel
-		- latitude: Latitud exacta del hotel
-		- longitude: Longitud exacta del hotel
-		- imageUrl: URL de la primera imagen del hotel (puede ser null)
-		- cityName: Ciudad donde se encuentra
-		- countryName: País donde se encuentra
-		- cityLatitude: Latitud de la ciudad (para análisis climático)
-		- cityLongitude: Longitud de la ciudad
-		- cityIsCapital: Si está en una ciudad capital
-		- cityPopulation: Población de la ciudad
+		RETURNED INFORMATION:
+		- id: Unique ID of the hotel
+		- name: Hotel name
+		- address: Hotel address
+		- latitude: Exact latitude of the hotel
+		- longitude: Exact longitude of the hotel
+		- imageUrl: URL of the hotel's first image (may be null)
+		- cityName: City where it is located
+		- countryName: Country where it is located
+		- cityLatitude: Latitude of the city (for climate analysis)
+		- cityLongitude: Longitude of the city
+		- cityIsCapital: Whether it is in a capital city
+		- cityPopulation: Population of the city
 
-		CÓMO USAR ESTA INFORMACIÓN:
-		1. Para filtrar por ubicación geográfica, usa latitude/longitude
-		2. Para determinar clima y estación, usa latitude y la fecha consultada
-		3. Para identificar ciudades costeras, analiza el nombre de la ciudad y coordenadas
-		4. Para ciudades grandes vs pequeñas, usa cityPopulation
-		5. Para destinos urbanos importantes, verifica cityIsCapital
+		HOW TO USE THIS INFORMATION:
+		1. To filter by geographic location, use latitude/longitude
+		2. To determine climate and season, use latitude and the queried date
+		3. To identify coastal cities, analyze the city name and coordinates
+		4. For large vs. small cities, use cityPopulation
+		5. For major urban destinations, check cityIsCapital
 
-		NOTA: Esta función devuelve TODOS los hoteles.  El agente debe aplicar filtros según:
-		- Preferencias climáticas del usuario
-		- Tipo de destino solicitado (playa, montaña, ciudad, etc.)
-		- Estación del año basada en la fecha y hemisferio
-		- Cualquier otro criterio mencionado por el usuario
+		NOTE: This function returns ALL hotels. The agent must apply filters based on:
+		- User climate preferences
+		- Type of destination requested (beach, mountain, city, etc.)
+		- Season of the year based on date and hemisphere
+		- Any other criteria mentioned by the user
 
-		IMPORTANTE: Cuando devuelvas hoteles al usuario, debes retornar:
-		1. Un mensaje conversacional explicando los resultados
-		2. Un array JSON con los hoteles filtrados en este formato:
-		   [{"id": 1, "name": ".. .", "address": ".. .", "latitude": X, "longitude": Y, "imageUrl": "..."}, ...]
+		IMPORTANT: When returning hotels to the user, you must provide:
+		1. A conversational message explaining the results
+		2. A JSON array with the filtered hotels in this format:
+		   [{"id": 1, "name": "...", "address": "...", "latitude": X, "longitude": Y, "imageUrl": "..."}, ...]
 
-		Incluye SOLO los campos: id, name, address, latitude, longitude en el JSON de respuesta.
+		Include ONLY the fields: id, name, address, latitude, longitude, imageUrl in the response JSON.
 	""")
 	fun getAllHotels(): List<StayInfo> {
 		val pageable = PageRequest.of(0, 50)
@@ -133,7 +132,7 @@ class AgentTools(
 				id = stay.id ?: 0,
 				name = stay.name,
 				address = stay.address,
-				latitude = stay.latitude ?: stay.city?. latitude ?: 0.0,  // lat del hotel si existe
+				latitude = stay.latitude ?: stay.city?.latitude ?: 0.0,
 				longitude = stay.longitude ?: stay.city?.longitude ?: 0.0,
 				imageUrl = firstImage,
 				cityName = stay.city?. name ?: "N/A",
@@ -147,23 +146,23 @@ class AgentTools(
 
 	@Tool
 	@LLMDescription("""
-		Obtiene todos los hoteles de una ciudad específica.
+		Obtains all hotels from a specific city.
 
-		PARÁMETROS:
-		- cityName: Nombre exacto o aproximado de la ciudad
+		PARAMETERS:
+		- cityName: Exact or approximate name of the city
 
-		INFORMACIÓN RETORNADA:
-		- Lista de hoteles con su información completa (misma estructura que getAllHotels)
+		RETURNED INFORMATION:
+		- List of hotels with their complete information (same structure as getAllHotels)
 
-		USA ESTA FUNCIÓN cuando:
-		- El usuario pregunta específicamente por hoteles en una ciudad conocida
-		- Ya identificaste una ciudad de interés y necesitas sus hoteles
-		- Quieres información detallada de hoteles en una ubicación específica
+		USE THIS FUNCTION when:
+		- The user specifically asks for hotels in a known city
+		- You have already identified a city of interest and need its hotels
+		- You want detailed information about hotels in a specific location
 
-		Retorna la misma información que getAllHotels() pero filtrado por ciudad.
+		Returns the same information as getAllHotels() but filtered by city.
 	""")
 	fun getHotelsByCity(
-		@LLMDescription("Nombre de la ciudad para la cual se desea obtener los hoteles")
+		@LLMDescription("Name of the city for which the hotels are to be obtained")
 		cityName: String
 	): List<StayInfo> {
 		val pageable = PageRequest.of(0, 50)
@@ -195,7 +194,7 @@ class AgentTools(
 				latitude = stay.latitude ?: stay.city?.latitude ?: 0.0,
 				longitude = stay.longitude ?: stay.city?.longitude ?: 0.0,
 				imageUrl = firstImage,
-				cityName = stay. city?.name ?: cityName,
+				cityName = stay.city?.name ?: cityName,
 				cityLatitude = stay.city?. latitude ?: 0.0,
 				cityLongitude = stay.city?.longitude ?: 0.0,
 				cityIsCapital = stay.city?.isCapital ?: false,
@@ -206,32 +205,32 @@ class AgentTools(
 
 	@Tool
 	@LLMDescription("""
-		Obtiene la fecha actual del sistema para cálculos y comparaciones.
+		Gets the current system date for calculations and comparisons.
 
-		RETORNA:
-		- Fecha actual en formato YYYY-MM-DD
+		RETURNS:
+		- Current date in YYYY-MM-DD format
 
-		USA ESTA FUNCIÓN para:
-		- Saber qué fecha es hoy
-		- Calcular fechas relativas (ej: "en 2 semanas" = hoy + 14 días)
-		- Determinar la estación actual en diferentes hemisferios
-		- Interpretar fechas festivas del año en curso
+		USE THIS FUNCTION to:
+		- Know what today’s date is
+		- Calculate relative dates (e.g., “in 2 weeks” = today + 14 days)
+		- Determine the current season in different hemispheres
+		- Interpret holiday dates for the current year
 
-		FECHAS FESTIVAS COMUNES:
-		- Navidad: 25 de diciembre
-		- Año Nuevo: 1 de enero
-		- Nochebuena: 24 de diciembre
-		- Nochevieja: 31 de diciembre
-		- Día de Reyes: 6 de enero
-		- San Valentín: 14 de febrero
-		- Halloween: 31 de octubre
-		- Semana Santa: variable (marzo/abril, buscar año específico)
-		- Fiestas Patrias Chile: 18 de septiembre
+		COMMON HOLIDAYS:
+		- Christmas: December 25
+		- New Year’s Day: January 1
+		- Christmas Eve: December 24
+		- New Year’s Eve: December 31
+		- Epiphany (Three Kings’ Day): January 6
+		- Valentine’s Day: February 14
+		- Halloween: October 31
+		- Holy Week: variable (March/April, depends on the specific year)
+		- Chilean Independence Day: September 18
 
-		NOTA: Combina esta fecha con la latitud de las ciudades para determinar:
-		- Qué estación del año será en esa ubicación
-		- Si será temporada alta/baja turística
-		- Clima esperado en esa fecha y ubicación
+		NOTE: Combine this date with the latitude of the cities to determine:
+		- What season it will be in that location
+		- Whether it will be high/low tourist season
+		- Expected weather for that date and location
 	""")
 	fun getCurrentDate(): String {
 		return LocalDate.now().toString()

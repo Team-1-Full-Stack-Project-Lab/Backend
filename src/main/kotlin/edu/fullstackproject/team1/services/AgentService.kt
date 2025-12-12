@@ -7,34 +7,65 @@ import ai.koog.prompt.executor.clients.google.GoogleLLMClient
 import ai.koog.prompt.executor.llms.SingleLLMPromptExecutor
 import edu.fullstackproject.team1.config.AgentConfig
 import edu.fullstackproject.team1.dtos.responses.ChatResponse
+import edu.fullstackproject.team1.dtos.responses.ConversationMessage
 import edu.fullstackproject.team1.dtos.responses.HotelData
 import edu.fullstackproject.team1.tool.AgentTools
 import kotlinx.serialization.json.Json
 import org.springframework.stereotype.Service
+import java.util.UUID
+import java.util.concurrent.ConcurrentHashMap
 
 @Service
 class AgentService(
 	private val agentConfig: AgentConfig,
 	private val agentTools: AgentTools
 ) {
-	private val client = GoogleLLMClient(
-		apiKey = System.getenv("GOOGLE_API_KEY")
-	)
+	private val sessionHistories = ConcurrentHashMap<String, MutableList<ConversationMessage>>()
+	private val sessionHotels = ConcurrentHashMap<String, List<HotelData>>()
 
-	private val executor = SingleLLMPromptExecutor(client)
+	fun createAgentWithHistory(sessionId: String): AIAgent<String, String> {
+		val history = getHistory(sessionId)
+		val hotels = sessionHotels[sessionId]
+		val contextHistory = buildContextFromHistory(history,hotels)
+		val systemPromptWithContext = if (contextHistory.isNotEmpty()) {
+			"""
+            ${agentConfig.systemPrompt}
+
+            <conversation_history>
+            $contextHistory
+            </conversation_history>
+
+            IMPORTANT INSTRUCTIONS FOR CONTEXT:
+            - You MUST use the conversation history above to maintain context
+            - When the user says "the first hotel", "that hotel", or similar references, look in the conversation history
+            - DO NOT say you don't have information if it's in the conversation history
+            - Be coherent with your previous responses
+			- You can reference specific hotels by their name, id, or position in the list
+            """.trimIndent()
+		} else {
+			agentConfig.systemPrompt
+		}
+		val client = GoogleLLMClient(
+			apiKey = System.getenv("GOOGLE_API_KEY")
+		)
+		val executor = SingleLLMPromptExecutor(client)
+		val agent = createAgent(executor, systemPromptWithContext)
+		return agent
+	}
 
 	private val json = Json{
 		ignoreUnknownKeys = true
 		isLenient = true
+		prettyPrint = true
 	}
 
-	private fun createAgent(): AIAgent<String, String> {
+	private fun createAgent(executor: SingleLLMPromptExecutor, systemPromptWithContext: Any): AIAgent<String, String> {
 		return AIAgent(
 			promptExecutor = executor,
 			llmModel = agentConfig.model,
 			temperature = agentConfig.temperature,
 			toolRegistry = createToolRegistry(),
-			systemPrompt = agentConfig.systemPrompt,
+			systemPrompt = systemPromptWithContext as String?,
 			maxIterations = agentConfig.maxIterations
 		)
 	}
@@ -48,20 +79,76 @@ class AgentService(
 		}
 	}
 
-	suspend fun processMessage(message: String): ChatResponse {
-		val agent = createAgent()
-		return try {
+	fun getHistory(sessionId: String): List<ConversationMessage> {
+		return sessionHistories.getOrDefault(sessionId,mutableListOf())
+	}
+	fun addMessage(sessionId: String,role: String, content: String) {
+		val history = sessionHistories.getOrPut(sessionId, { mutableListOf() })
+		history.add(ConversationMessage(role, content))
+		if(history.size >20) {
+			history.removeAt(0)
+		}
+	}
+	private fun buildContextFromHistory(
+		history: List<ConversationMessage>,
+		hotels: List<HotelData>?
+	): String {
+		if(history.isEmpty()) return ""
+		val contextMessages = history.takeLast(10).joinToString("\n\n"){msg->
+			when(msg.role){
+				"user" -> "User asked: ${msg.content}"
+				"assistant" -> "You (Assistant) responded: ${msg.content}"
+				else -> ""
+			}
+		}
+		val hotelsContext = if (! hotels.isNullOrEmpty()) {
+			"""
+            <hotels_data>
+            Previously retrieved hotels (use this data to answer questions):
+            ${json.encodeToString(hotels)}
+            </hotels_data>
+            """.trimIndent()
+		} else {
+			""
+		}
+		return """
+            |Previous conversation:
+            |
+            |$contextMessages
+			|$hotelsContext
+            |
+            |---
+            |Now respond to the user's new message, using the context above.
+            """.trimMargin()
+	}
+
+	fun clearSession(sessionId: String) {
+		sessionHistories.remove(sessionId)
+		sessionHotels.remove(sessionId)
+	}
+
+	suspend fun processMessage(message: String, sessionId: String?): ChatResponse {
+		val actualSessionId = sessionId ?: UUID.randomUUID().toString()
+		val agent = createAgentWithHistory(actualSessionId)
+		val response = try {
 			val agentResponse = agent.run(message)
-			parseAgentResponse(agentResponse)
+			parseAgentResponse(agentResponse, actualSessionId)
 		} catch (e: Exception) {
 			e.printStackTrace()
 			ChatResponse(
-				response = "Error procesando tu solicitud: ${e.message}",
+				response = "Error processing your request: ${e.message}",
+				sessionId = actualSessionId,
 				hotels = null
 			)
 		}
+		addMessage(actualSessionId,"user", message)
+		addMessage(actualSessionId,"assistant", response.response)
+		if (!response.hotels.isNullOrEmpty()) {
+			sessionHotels[actualSessionId] = response.hotels
+		}
+		return response
 	}
-	private fun parseAgentResponse(response: String): ChatResponse {
+	private fun parseAgentResponse(response: String, actualSessionId: String): ChatResponse {
 		val marker = "###HOTELS_DATA###"
 
 		return if (response.contains(marker)) {
@@ -83,20 +170,22 @@ class AgentService(
 					e.printStackTrace()
 					null
 				}
-
 				ChatResponse(
-					response = message. ifEmpty { "Aquí están los hoteles encontrados:" },
+					response = message.ifEmpty { "Here are the hotels that were found:" },
+					sessionId = actualSessionId,
 					hotels = hotels
 				)
 			} else {
 				ChatResponse(
-					response = response. replace(marker, ""). trim(),
+					response = response.replace(marker, "").trim(),
+					sessionId = actualSessionId,
 					hotels = null
 				)
 			}
 		} else {
 			ChatResponse(
 				response = response.trim(),
+				sessionId = actualSessionId,
 				hotels = null
 			)
 		}
