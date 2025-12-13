@@ -23,16 +23,10 @@ class StayService(
 		maxPrice: Double?,
 		pageable: Pageable
 	): Page<Stay> {
-		if (serviceIds.isNullOrEmpty() && minPrice == null && maxPrice == null) {
-			return stayRepository.findAllWithCityAndType(pageable)
-		}
-
-		val serviceCount = if (!serviceIds.isNullOrEmpty()) serviceIds.size.toLong() else null
-
 		return stayRepository.findAllWithFilters(
 			cityId = cityId,
 			serviceIds = if (serviceIds.isNullOrEmpty()) null else serviceIds,
-			serviceCount = serviceCount,
+			serviceCount = if (!serviceIds.isNullOrEmpty()) serviceIds.size.toLong() else null,
 			minPrice = minPrice,
 			maxPrice = maxPrice,
 			pageable = pageable
