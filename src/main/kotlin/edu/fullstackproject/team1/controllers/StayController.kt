@@ -39,6 +39,9 @@ class StayController(
 			],
 	)
 	fun getAllStays(
+		@Parameter(description = "City ID")
+		@RequestParam(required = false)
+		cityId: Long?,
 		@Parameter(description = "List of service IDs to filter by (stays must have ALL specified services)")
 		@RequestParam(required = false)
 		serviceIds: List<Long>?,
@@ -56,7 +59,7 @@ class StayController(
 		size: Int,
 	): ResponseEntity<Page<StayResponse>> {
 		val pageable = PageRequest.of(page, size)
-		val stays = stayService.getAllStays(serviceIds, minPrice, maxPrice, pageable)
+		val stays = stayService.getAllStays(cityId, serviceIds, minPrice, maxPrice, pageable)
 		return ResponseEntity.ok(stayMapper.toResponsePage(stays, true, minPrice, maxPrice))
 	}
 

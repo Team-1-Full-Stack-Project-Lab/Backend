@@ -82,6 +82,7 @@ interface StayRepository : JpaRepository<Stay, Long> {
                 AND (:minPrice IS NULL OR su2.pricePerNight >= :minPrice)
                 AND (:maxPrice IS NULL or su2.pricePerNight <= :maxPrice)
             ))
+			AND (:cityId IS NULL OR s2.city.id = :cityId)
             GROUP BY s2.id
             HAVING :serviceCount IS NULL OR COUNT(DISTINCT ss2.service.id) = :serviceCount
         )
@@ -96,11 +97,13 @@ interface StayRepository : JpaRepository<Stay, Long> {
             AND (:minPrice IS NULL OR su.pricePerNight >= :minPrice)
             AND (:maxPrice IS NULL OR su.pricePerNight <= :maxPrice)
         ))
+		AND (:cityId IS NULL OR s.city.id = :cityId)
         GROUP BY s.id
         HAVING :serviceCount IS NULL OR COUNT(DISTINCT ss.service.id) = :serviceCount
     """
 	)
 	fun findAllWithFilters(
+		@Param("cityId") cityId: Long?,
 		@Param("serviceIds") serviceIds: List<Long>?,
 		@Param("serviceCount") serviceCount: Long?,
 		@Param("minPrice") minPrice: Double?,

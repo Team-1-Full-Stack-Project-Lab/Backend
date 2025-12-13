@@ -17,6 +17,7 @@ class StayService(
 ) {
 
 	fun getAllStays(
+		cityId: Long?,
 		serviceIds: List<Long>?,
 		minPrice: Double?,
 		maxPrice: Double?,
@@ -29,6 +30,7 @@ class StayService(
 		val serviceCount = if (!serviceIds.isNullOrEmpty()) serviceIds.size.toLong() else null
 
 		return stayRepository.findAllWithFilters(
+			cityId = cityId,
 			serviceIds = if (serviceIds.isNullOrEmpty()) null else serviceIds,
 			serviceCount = serviceCount,
 			minPrice = minPrice,

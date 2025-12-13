@@ -22,6 +22,7 @@ class StayGraphQLController(
 
 	@QueryMapping
 	fun getAllStays(
+		@Argument(name = "cityId") cityId: Long? = null,
 		@Argument(name = "serviceIds") serviceIds: List<Long>? = null,
 		@Argument(name = "minPrice") minPrice: Double? = null,
 		@Argument(name = "maxPrice") maxPrice: Double? = null,
@@ -29,7 +30,7 @@ class StayGraphQLController(
 		@Argument(name = "size") size: Int = 20,
 	): Page<StayResponse> {
 		val pageable = PageRequest.of(page, size)
-		val stays = stayService.getAllStays(serviceIds, minPrice, maxPrice, pageable)
+		val stays = stayService.getAllStays(cityId, serviceIds, minPrice, maxPrice, pageable)
 		return stayMapper.toResponsePage(stays, true, minPrice, maxPrice)
 	}
 
