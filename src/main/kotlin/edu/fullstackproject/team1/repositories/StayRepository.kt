@@ -64,4 +64,52 @@ interface StayRepository : JpaRepository<Stay, Long> {
 		countQuery = "SELECT COUNT(DISTINCT s) FROM Stay s"
 	)
 	fun findAllWithCityAndType(pageable: Pageable): Page<Stay>
+
+	@Query(
+		"""
+        SELECT DISTINCT s FROM Stay s
+        LEFT JOIN FETCH s.city c
+        LEFT JOIN FETCH s.stayType st
+        LEFT JOIN FETCH s.stayServices ss
+        LEFT JOIN FETCH ss.service
+        WHERE s.id IN (
+            SELECT s2.id FROM Stay s2
+        	LEFT JOIN s2.city c2
+            LEFT JOIN s2.stayServices ss2
+            WHERE (:cityId IS NULL OR c2.id = :cityId)
+            AND (:serviceIds IS NULL OR ss2.service.id IN :serviceIds)
+            AND (:minPrice IS NULL AND :maxPrice IS NULL OR EXISTS (
+                SELECT 1 FROM StayUnit su2
+                WHERE su2.stay.id = s2.id
+                AND (:minPrice IS NULL OR su2.pricePerNight >= :minPrice)
+                AND (:maxPrice IS NULL or su2.pricePerNight <= :maxPrice)
+            ))
+            GROUP BY s2.id
+            HAVING :serviceCount IS NULL OR COUNT(DISTINCT ss2.service.id) = :serviceCount
+        )
+    """,
+		countQuery = """
+        SELECT COUNT(DISTINCT s.id) FROM Stay s
+        LEFT JOIN s.city c
+        LEFT JOIN s.stayServices ss
+        WHERE (:cityId IS NULL OR c.id = :cityId)
+        AND (:serviceIds IS NULL OR ss.service.id IN :serviceIds)
+        AND (:minPrice IS NULL AND :maxPrice IS NULL OR EXISTS (
+            SELECT 1 FROM StayUnit su
+            WHERE su.stay.id = s.id
+            AND (:minPrice IS NULL OR su.pricePerNight >= :minPrice)
+            AND (:maxPrice IS NULL OR su.pricePerNight <= :maxPrice)
+        ))
+        GROUP BY s.id
+        HAVING :serviceCount IS NULL OR COUNT(DISTINCT ss.service.id) = :serviceCount
+    """
+	)
+	fun findAllWithFilters(
+		@Param("cityId") cityId: Long?,
+		@Param("serviceIds") serviceIds: List<Long>?,
+		@Param("serviceCount") serviceCount: Long?,
+		@Param("minPrice") minPrice: Double?,
+		@Param("maxPrice") maxPrice: Double?,
+		pageable: Pageable
+	): Page<Stay>
 }

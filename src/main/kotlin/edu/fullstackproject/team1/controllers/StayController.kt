@@ -25,7 +25,7 @@ class StayController(
 	@GetMapping
 	@Operation(
 		summary = "Get all stays",
-		description = "Retrieve a paginated list of all available stays",
+		description = "Retrieve a paginated list of all available stays, optionally filtered by services and price range",
 	)
 	@ApiResponses(
 		value =
@@ -39,6 +39,18 @@ class StayController(
 			],
 	)
 	fun getAllStays(
+		@Parameter(description = "City ID")
+		@RequestParam(required = false)
+		cityId: Long?,
+		@Parameter(description = "List of service IDs to filter by (stays must have ALL specified services)")
+		@RequestParam(required = false)
+		serviceIds: List<Long>?,
+		@Parameter(description = "Minimum price per night")
+		@RequestParam(required = false)
+		minPrice: Double?,
+		@Parameter(description = "Maximum price per night")
+		@RequestParam(required = false)
+		maxPrice: Double?,
 		@Parameter(description = "Page number (0-indexed)")
 		@RequestParam(defaultValue = "0")
 		page: Int,
@@ -47,8 +59,8 @@ class StayController(
 		size: Int,
 	): ResponseEntity<Page<StayResponse>> {
 		val pageable = PageRequest.of(page, size)
-		val stays = stayService.getAllStays(pageable)
-		return ResponseEntity.ok(stayMapper.toResponsePage(stays, true))
+		val stays = stayService.getAllStays(cityId, serviceIds, minPrice, maxPrice, pageable)
+		return ResponseEntity.ok(stayMapper.toResponsePage(stays, true, minPrice, maxPrice))
 	}
 
 	@GetMapping("/{id}")

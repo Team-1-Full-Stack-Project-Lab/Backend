@@ -15,8 +15,22 @@ class StayService(
 	private val stayRepository: StayRepository,
 	private val stayImageRepository: StayImageRepository,
 ) {
-	fun getAllStays(pageable: Pageable): Page<Stay> {
-		return stayRepository.findAllWithCityAndType(pageable)
+
+	fun getAllStays(
+		cityId: Long?,
+		serviceIds: List<Long>?,
+		minPrice: Double?,
+		maxPrice: Double?,
+		pageable: Pageable
+	): Page<Stay> {
+		return stayRepository.findAllWithFilters(
+			cityId = cityId,
+			serviceIds = if (serviceIds.isNullOrEmpty()) null else serviceIds,
+			serviceCount = if (!serviceIds.isNullOrEmpty()) serviceIds.size.toLong() else null,
+			minPrice = minPrice,
+			maxPrice = maxPrice,
+			pageable = pageable
+		)
 	}
 
 	fun getStayById(id: Long): Stay {
