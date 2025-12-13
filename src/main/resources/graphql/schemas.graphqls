@@ -178,6 +178,26 @@ type EmptyResult {
 	_empty: String
 }
 
+#AGENT TYPES
+type HotelData{
+	id: ID!
+	name: String!
+	address: String!
+	latitude: Float!
+	longitude: Float!
+	imageUrl: String
+}
+type ChatResponse{
+	response: String!
+	sessionId: String!
+	hotels:[HotelData]
+}
+type ConversationMessage{
+	role: String!
+	content: String!
+	timestamp: Float!
+}
+
 #QUERIES
 type Query {
 	#City queries
@@ -231,6 +251,8 @@ type Query {
 		minCapacity: Int!
 		maxPrice: Float!
 	): [StayUnit!]!
+	#Agent queries
+	getSessionHistory(sessionId: String!): [ConversationMessage!]!
 }
 #MUTATIONS
 type Mutation {
@@ -249,4 +271,7 @@ type Mutation {
 	#StayImage mutations
 	createStayImage(request: CreateStayImageRequest!): StayImage!
 	deleteStayImage(id: ID!): EmptyResult!
+	#Agent mutations
+	chatWithAgent(message: String!, sessionId: String): ChatResponse!
+	clearSession(sessionId: String!): Boolean!
 }
