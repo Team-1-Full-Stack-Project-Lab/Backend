@@ -11,6 +11,7 @@ import edu.fullstackproject.team1.dtos.responses.ConversationMessage
 import edu.fullstackproject.team1.dtos.responses.HotelData
 import edu.fullstackproject.team1.tool.AgentTools
 import kotlinx.serialization.json.Json
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import java.util.UUID
 import java.util.concurrent.ConcurrentHashMap
@@ -18,7 +19,8 @@ import java.util.concurrent.ConcurrentHashMap
 @Service
 class AgentService(
 	private val agentConfig: AgentConfig,
-	private val agentTools: AgentTools
+	private val agentTools: AgentTools,
+	@Value("\${google.api.key:}") private val googleApiKey: String = "",
 ) {
 	private val sessionHistories = ConcurrentHashMap<String, MutableList<ConversationMessage>>()
 	private val sessionHotels = ConcurrentHashMap<String, List<HotelData>>()
@@ -46,7 +48,7 @@ class AgentService(
 			agentConfig.systemPrompt
 		}
 		val client = GoogleLLMClient(
-			apiKey = System.getenv("GOOGLE_API_KEY")
+			apiKey = googleApiKey
 		)
 		val executor = SingleLLMPromptExecutor(client)
 		val agent = createAgent(executor, systemPromptWithContext)
