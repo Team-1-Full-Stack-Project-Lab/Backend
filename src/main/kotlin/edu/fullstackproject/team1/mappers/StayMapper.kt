@@ -57,7 +57,7 @@ class StayMapper(
 		maxPrice: Double? = null
 	): StayResponse {
 		val cityResp =
-			if (includeRelations) cityMapper.toResponse(stay.city, includeRelations = false) else null
+			if (includeRelations) cityMapper.toResponse(stay.city, true) else null
 		val stayTypeResp = if (includeRelations) stayTypeMapper.toResponse(stay.stayType) else null
 
 		val company = stay.company
