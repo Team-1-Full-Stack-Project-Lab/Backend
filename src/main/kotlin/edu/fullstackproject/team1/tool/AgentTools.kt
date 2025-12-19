@@ -117,7 +117,7 @@ class AgentTools(
 	""")
 	fun getAllHotels(): List<StayInfo> {
 		val pageable = PageRequest.of(0, 50)
-		return stayService.getAllStays(null, null, null, null, pageable). content.map { stay ->
+		return stayService.getAllStays(null, null, null, null, null, pageable). content.map { stay ->
 			val stayId = stay.id
 			val firstImage = if (stayId != null) {
 				try {

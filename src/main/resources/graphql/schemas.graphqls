@@ -68,6 +68,21 @@ type User {
 	email: String!
 	firstName: String!
 	lastName: String!
+	company: Company
+}
+
+#COMPANY TYPES
+type Company {
+	id: ID!
+	userId: ID!
+	name: String!
+	email: String!
+	phone: String
+	description: String
+	createdAt: String!
+	updatedAt: String!
+	user: User
+	stays: [Stay!]
 }
 #USER INPUT TYPES
 input UserUpdateRequest {
@@ -83,6 +98,20 @@ input RegisterRequest {
 	firstName: String!
 	lastName: String!
 	password: String!
+}
+
+#COMPANY INPUT TYPES
+input CompanyCreateRequest {
+	name: String!
+	email: String!
+	phone: String
+	description: String
+}
+input CompanyUpdateRequest {
+	name: String
+	email: String
+	phone: String
+	description: String
 }
 #AUTH TYPES
 type Auth {
@@ -159,6 +188,47 @@ input CreateStayImageRequest {
 	stayId: Int!
 }
 
+#STAY INPUTS
+input StayCreateRequest {
+	cityId: ID!
+	stayTypeId: ID!
+	name: String!
+	address: String!
+	latitude: Float!
+	longitude: Float!
+	description: String
+	serviceIds: [ID!]
+	imageUrls: [String!]
+}
+input StayUpdateRequest {
+	cityId: ID
+	stayTypeId: ID
+	name: String
+	address: String
+	latitude: Float
+	longitude: Float
+	description: String
+	serviceIds: [ID!]
+	imageUrls: [String!]
+}
+
+#STAY UNIT INPUTS
+input StayUnitCreateRequest {
+	stayId: ID!
+	stayNumber: String!
+	numberOfBeds: Int!
+	capacity: Int!
+	pricePerNight: Float!
+	roomType: String!
+}
+input StayUnitUpdateRequest {
+	stayNumber: String
+	numberOfBeds: Int
+	capacity: Int
+	pricePerNight: Float
+	roomType: String
+}
+
 #TRIP STAY UNIT TYPES AND RESPONSES
 type TripStayUnit {
 	trip: Trip
@@ -221,6 +291,9 @@ type Query {
 	getRegions(name: String): [Region!]!
 	#User queries
 	getUser: User!
+	#Company queries
+	getCompanyById(id: ID!): Company
+	getAllCompanies: [Company!]!
 	#Trip queries
 	getUserItineraries: [Trip!]!
 	getItineraryStayUnits(id: ID!): [TripStayUnit!]!
@@ -262,12 +335,24 @@ type Mutation {
 	#User mutations
 	updateUser(request: UserUpdateRequest!): User!
 	deleteUser: EmptyResult!
+	#Company mutations
+	createCompany(request: CompanyCreateRequest!): Company!
+	updateCompany(id: ID!, request: CompanyUpdateRequest!): Company!
+	deleteCompany(id: ID!): EmptyResult!
 	#Trip mutations
 	createItinerary(request: CreateTripRequest!): Trip!
 	updateItinerary(id: ID!, request: UpdateTripRequest!): Trip!
 	deleteItinerary(id: ID!): EmptyResult!
 	addStayUnitToItinerary(id: ID!, request: AddStayUnitToTripRequest!): TripStayUnit!
 	removeStayUnitFromItinerary(tripId: ID!, stayUnitId: ID!): EmptyResult!
+	#Stay mutations
+	createStay(request: StayCreateRequest!): Stay!
+	updateStay(id: ID!, request: StayUpdateRequest!): Stay!
+	deleteStay(id: ID!): Boolean!
+	#StayUnit mutations
+	createStayUnit(request: StayUnitCreateRequest!): StayUnit!
+	updateStayUnit(id: ID!, request: StayUnitUpdateRequest!): StayUnit!
+	deleteStayUnit(id: ID!): Boolean!
 	#StayImage mutations
 	createStayImage(request: CreateStayImageRequest!): StayImage!
 	deleteStayImage(id: ID!): EmptyResult!

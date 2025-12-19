@@ -58,7 +58,7 @@ class UserController(
 	): ResponseEntity<UserResponse> {
 		val user = userService.getUserByEmail(user.username)
 
-		return ResponseEntity.ok(userMapper.toResponse(user))
+		return ResponseEntity.ok(userMapper.toResponse(user, includeRelations = true))
 	}
 
 	@PutMapping("/profile")
@@ -101,7 +101,7 @@ class UserController(
 	): ResponseEntity<UserResponse> {
 		val user = userService.updateUser(user.username, request.toCommand())
 
-		return ResponseEntity.ok(userMapper.toResponse(user))
+		return ResponseEntity.ok(userMapper.toResponse(user, includeRelations = true))
 	}
 
 	@DeleteMapping("/profile")

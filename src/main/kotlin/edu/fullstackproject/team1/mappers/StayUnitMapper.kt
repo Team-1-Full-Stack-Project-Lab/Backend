@@ -1,6 +1,8 @@
 package edu.fullstackproject.team1.mappers
 
+import edu.fullstackproject.team1.dtos.commands.StayUnitCreateCommand
 import edu.fullstackproject.team1.dtos.responses.StayUnitResponse
+import edu.fullstackproject.team1.models.Stay
 import edu.fullstackproject.team1.models.StayUnit
 import org.springframework.stereotype.Component
 
@@ -8,6 +10,17 @@ import org.springframework.stereotype.Component
 class StayUnitMapper(
 	private val stayMapper: StayMapper,
 ) {
+	fun toEntity(command: StayUnitCreateCommand, stay: Stay): StayUnit {
+		return StayUnit(
+			stay = stay,
+			stayNumber = command.stayNumber,
+			numberOfBeds = command.numberOfBeds,
+			capacity = command.capacity,
+			pricePerNight = command.pricePerNight,
+			roomType = command.roomType,
+		)
+	}
+
 	fun toResponse(stayUnit: StayUnit, includeRelations: Boolean = false): StayUnitResponse {
 		val stayResp = if (includeRelations) stayMapper.toResponse(stayUnit.stay, includeRelations = false) else null
 

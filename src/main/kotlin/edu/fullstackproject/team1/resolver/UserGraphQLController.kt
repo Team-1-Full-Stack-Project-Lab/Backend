@@ -25,7 +25,7 @@ class UserGraphQLController(
 		@AuthenticationPrincipal user: UserDetails?,
 	): UserResponse {
 		val user = userService.getUserByEmail(user.requireAuthenticated().username)
-		return userMapper.toResponse(user)
+		return userMapper.toResponse(user, includeRelations = true)
 	}
 
 	@MutationMapping
@@ -35,7 +35,7 @@ class UserGraphQLController(
 		@Argument request: UserUpdateRequest,
 	): UserResponse {
 		val user = userService.updateUser(user.requireAuthenticated().username, request.toCommand())
-		return userMapper.toResponse(user)
+		return userMapper.toResponse(user, includeRelations = true)
 	}
 
 	@MutationMapping

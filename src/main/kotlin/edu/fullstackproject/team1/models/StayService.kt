@@ -22,7 +22,7 @@ data class StayService(
 
 	@CreationTimestamp
 	val createdAt: Instant? = null,
-	
+
 	@UpdateTimestamp
 	val updatedAt: Instant? = null,
 )
