@@ -12,12 +12,12 @@ class UserService(
 	private val userRepository: UserRepository,
 ) {
 	fun getUserByEmail(email: String): User {
-		return userRepository.findByEmail(email)
+		return userRepository.findWithCompanyByEmail(email)
 			?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "User not found")
 	}
 
 	fun updateUser(email: String, command: UserUpdateCommands): User {
-		val existingUser = userRepository.findByEmail(email)
+		val existingUser = userRepository.findWithCompanyByEmail(email)
 			?: throw ResponseStatusException(HttpStatus.NOT_FOUND, "User not found")
 		val user = existingUser.copy(
 			firstName = command.firstName ?: existingUser.firstName,

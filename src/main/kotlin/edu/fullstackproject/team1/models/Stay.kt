@@ -20,6 +20,10 @@ data class Stay(
 	@JoinColumn(name = "stay_type_id", nullable = false)
 	val stayType: StayType,
 
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "company_id", nullable = true)
+	val company: Company? = null,
+
 	@Column(nullable = false, length = 255)
 	val name: String,
 
@@ -43,12 +47,12 @@ data class Stay(
 	@OneToMany(mappedBy = "stay", fetch = FetchType.LAZY)
 	val stayUnits: List<StayUnit> = emptyList(),
 
-	@OneToMany(mappedBy = "stay", fetch = FetchType.LAZY)
-	val stayServices: List<StayService> = emptyList(),
+	@OneToMany(mappedBy = "stay", fetch = FetchType.LAZY, cascade = [CascadeType.ALL], orphanRemoval = true)
+	val stayServices: MutableList<StayService> = mutableListOf(),
 
 	@Column(name = "description")
 	var description: String? = null,
 
-	@OneToMany(mappedBy = "stay", fetch = FetchType.LAZY)
-	val images: List<StayImage> = emptyList(),
+	@OneToMany(mappedBy = "stay", fetch = FetchType.LAZY, cascade = [CascadeType.ALL], orphanRemoval = true)
+	val images: MutableList<StayImage> = mutableListOf(),
 )

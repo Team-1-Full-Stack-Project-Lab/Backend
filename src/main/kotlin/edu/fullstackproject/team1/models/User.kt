@@ -28,10 +28,13 @@ data class User(
 	@CreationTimestamp
 	@Column(nullable = false)
 	val createdAt: Instant? = null,
-	
+
 	@UpdateTimestamp
 	@Column(nullable = false)
 	val updatedAt: Instant? = null,
+
+	@OneToOne(mappedBy = "user", fetch = FetchType.LAZY, cascade = [CascadeType.ALL])
+	val company: Company? = null,
 ) : UserDetails {
 	override fun getAuthorities() = emptyList<Nothing>()
 

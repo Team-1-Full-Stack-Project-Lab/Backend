@@ -11,6 +11,7 @@ data class StayResponse(
 	val longitude: Double,
 	val city: CityResponse?,
 	val stayType: StayTypeResponse?,
+	val company: CompanyResponse?,
 	val services: List<ServiceResponse>?,
 	val units: List<StayUnitResponse>?,
 	val description: String?,
