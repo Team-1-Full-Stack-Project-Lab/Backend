@@ -23,7 +23,7 @@ class TripStayUnitMapper(
 
 	fun toResponse(tripStayUnit: TripStayUnit, includeRelations: Boolean = false): TripStayUnitResponse {
 		val tripResp =
-			if (includeRelations) tripMapper.toResponse(tripStayUnit.trip, includeRelations = false) else null
+			if (includeRelations) tripMapper.toResponse(tripStayUnit.trip, includeRelations = true) else null
 		val stayUnitResp =
 			if (includeRelations) stayUnitMapper.toResponse(tripStayUnit.stayUnit, includeRelations = false) else null
 

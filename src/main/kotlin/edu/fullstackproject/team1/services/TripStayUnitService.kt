@@ -46,7 +46,7 @@ class TripStayUnitService(
 		if (trip.user.email != email) {
 			throw ResponseStatusException(HttpStatus.FORBIDDEN, "Not allowed to get stay units for this trip")
 		}
-		return tripStayUnitRepository.findByTripIdWithStayUnit(tripId)
+		return tripStayUnitRepository.findByTripIdWithRelations(tripId)
 	}
 
 	@Transactional

@@ -17,10 +17,13 @@ interface TripStayUnitRepository : JpaRepository<TripStayUnit, TripStayUnitId> {
 		"""
 		SELECT tsu FROM TripStayUnit tsu
 		JOIN FETCH tsu.stayUnit su
+		JOIN FETCH tsu.trip t
+		JOIN FETCH t.city c
+		JOIN FETCH c.country
 		WHERE tsu.trip.id = :tripId
 	"""
 	)
-	fun findByTripIdWithStayUnit(tripId: Long): List<TripStayUnit>
+	fun findByTripIdWithRelations(tripId: Long): List<TripStayUnit>
 
 	@Query(
 		"""
