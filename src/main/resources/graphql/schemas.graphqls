@@ -299,7 +299,7 @@ type Query {
 	getItineraryStayUnits(id: ID!): [TripStayUnit!]!
 	#Stay queries
 	getStayById(id: ID!): Stay
-	getAllStays(cityId: Int, serviceIds: [ID!], minPrice: Float, maxPrice: Float, page: Int, size: Int): StayPage!
+	getAllStays(cityId: ID, serviceIds: [ID!], minPrice: Float, maxPrice: Float, page: Int, size: Int): StayPage!
 	getStaysByCity(cityId: ID!, page: Int, size: Int): StayPage!
 	searchStaysNearby(
 		latitude: Float!
