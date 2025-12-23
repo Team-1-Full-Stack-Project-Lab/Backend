@@ -2,7 +2,9 @@ package edu.fullstackproject.team1.tool
 
 import ai.koog.agents.core.tools.annotations.LLMDescription
 import ai.koog.agents.core. tools.annotations.Tool
+import edu.fullstackproject.team1.repositories.StayServiceRepository
 import edu.fullstackproject.team1.services.CityService
+import edu.fullstackproject.team1.services.ServiceService
 import edu.fullstackproject.team1.services.StayImageService
 import edu. fullstackproject.team1. services.StayService
 import java.time.LocalDate
@@ -14,7 +16,9 @@ import org. springframework.stereotype.Component
 class AgentTools(
 	private val cityService: CityService,
 	private val stayService: StayService,
-	private val stayImageService: StayImageService
+	private val stayImageService: StayImageService,
+	private val serviceService: ServiceService,
+	private val stayServiceRepository: StayServiceRepository
 ) {
 	@Serializable
 	data class CityInfo(
@@ -37,7 +41,16 @@ class AgentTools(
 		val cityLatitude: Double,
 		val cityLongitude: Double,
 		val cityIsCapital: Boolean,
-		val cityPopulation: Int?
+		val cityPopulation: Int?,
+		val services: List<String>?,
+		val minPrice: Double?,
+		val maxPrice: Double?
+	)
+
+	@Serializable
+	data class ServiceInfo(
+		val id: Long,
+		val name: String
 	)
 
 	@Tool
@@ -79,7 +92,163 @@ class AgentTools(
 
 	@Tool
 	@LLMDescription("""
+		Retrieves all available services/amenities that hotels can offer.
+
+		RETURNED INFORMATION:
+		- id:  Unique service ID (use this ID for filtering hotels)
+		- name: Service name (e.g., "WiFi", "Breakfast", "Pool", "Parking")
+
+		USAGE:
+		- Use this tool first to get service IDs when users ask for hotels with specific amenities
+		- Example: If user asks for "hotels with WiFi and breakfast", call this tool to get the IDs of those services
+		- Then use searchHotelsWithFilters with the obtained service IDs
+
+		COMMON SERVICE NAMES TO LOOK FOR:
+		- WiFi, Internet, Wireless
+		- Breakfast, Desayuno, Comida
+		- Pool, Piscina, Swimming
+		- Gym, Gimnasio, Fitness
+		- Air Conditioning, Aire Acondicionado, AC
+		- Pet Friendly, Mascotas
+		- Beach Access, Acceso Playa
+	""")
+	fun getAvailableServices(): List<ServiceInfo> {
+		return serviceService.getAllServices().map { service ->
+			ServiceInfo(
+				id = service.id!! ,
+				name = service.name
+			)
+		}
+	}
+
+	@Tool
+	@LLMDescription("""
+		Searches for hotels with advanced filters including services, price range, and location.
+
+		PARAMETERS:
+		- cityId: (Optional) Filter by specific city ID.  Use getCities() to get city IDs first
+		- serviceIds: (Optional) List of service IDs that hotels MUST have ALL of them.  Use getAvailableServices() to get service IDs first
+		- minPrice: (Optional) Minimum price per night in the local currency
+		- maxPrice: (Optional) Maximum price per night in the local currency
+		- limit: (Optional) Maximum number of results to return (default: 20, max: 50)
+
+		RETURNED INFORMATION:
+		- id: Hotel unique ID
+		- name: Hotel name
+		- address: Hotel address
+		- latitude, longitude: Exact location
+		- imageUrl: First hotel image (may be null)
+		- cityName, cityLatitude, cityLongitude: City information
+		- cityIsCapital, cityPopulation: City details
+		- services: List of service names the hotel offers
+		- minPrice:  Cheapest room price per night
+		- maxPrice: Most expensive room price per night
+
+		USAGE WORKFLOW:
+
+		1. FOR AMENITY-BASED SEARCHES:
+		   User:  "Hotels with WiFi and breakfast in Santiago"
+		   Step 1: Call getAvailableServices() → get WiFi ID (e.g., 1) and Breakfast ID (e.g., 3)
+		   Step 2: Call getCities() → get Santiago ID (e.g., 5)
+		   Step 3: Call searchHotelsWithFilters(cityId=5, serviceIds=[1, 3])
+
+		2. FOR PRICE-BASED SEARCHES:
+		   User: "Hotels under $100 per night"
+		   Step 1: Call searchHotelsWithFilters(maxPrice=100.0)
+
+		   User: "Hotels between $50 and $150"
+		   Step 1: Call searchHotelsWithFilters(minPrice=50.0, maxPrice=150.0)
+
+		3. FOR COMBINED FILTERS:
+		   User: "Budget hotels with pool in coastal cities"
+		   Step 1: Call getAvailableServices() → get Pool ID
+		   Step 2: Call getCities() → identify coastal cities
+		   Step 3: Call searchHotelsWithFilters for each coastal city with pool filter
+		   OR:  Call searchHotelsWithFilters(serviceIds=[poolId], maxPrice=80.0)
+
+		4. FOR LOCATION-ONLY SEARCHES:
+		   User:  "Hotels in Valparaíso"
+		   Step 1: Call getCities() → get Valparaíso ID
+		   Step 2: Call searchHotelsWithFilters(cityId=valparaisoId)
+
+		IMPORTANT NOTES:
+		- If serviceIds is provided, hotels MUST have ALL specified services (AND logic)
+		- Price filters apply to room units within each hotel
+		- Hotels are returned with their ACTUAL service names and price ranges
+		- Always call getAvailableServices() FIRST when filtering by amenities
+		- Results are ordered by creation date (newest first)
+
+		FILTER BEHAVIOR:
+		- cityId: Exact match only
+		- serviceIds: Hotel must have ALL services in the list
+		- minPrice/maxPrice: At least one room unit must fall within the range
+	""")
+	fun searchHotelsWithFilters(
+		cityId: Long?,
+		serviceIds: List<Long>?,
+		minPrice: Double?,
+		maxPrice: Double?,
+		limit: Int = 20
+	): List<StayInfo> {
+		val pageable = PageRequest.of(0, minOf(limit, 50))
+		val stays = stayService.getAllStays(
+			companyId = null,
+			cityId = cityId,
+			serviceIds = serviceIds,
+			minPrice = minPrice,
+			maxPrice = maxPrice,
+			pageable = pageable
+		)
+		return stays.content.mapNotNull { stay ->
+			try {
+				val firstImage = if (stay.id != null) {
+					try {
+						stayImageService. getAllStayImages()
+							.firstOrNull { it.stay?.id == stay.id }
+							?.link
+					} catch (e: Exception) {
+						null
+					}
+				} else null
+				val services = try {
+					stayServiceRepository.findByStayIdWithService(stay.id!!)
+						.map { it.service. name }
+				} catch (e: Exception) {
+					emptyList()
+				}
+				val prices = try {
+					stay.stayUnits.map { it.pricePerNight.toDouble() }
+				} catch (e: Exception) {
+					emptyList()
+				}
+				StayInfo(
+					id = stay.id!!,
+					name = stay.name,
+					address = stay.address,
+					latitude = stay.latitude,
+					longitude = stay.longitude,
+					imageUrl = firstImage,
+					cityName = stay.city.name,
+					cityLatitude = stay.city.latitude,
+					cityLongitude = stay.city.longitude,
+					cityIsCapital = stay.city.isCapital,
+					cityPopulation = stay.city.population,
+					services = services,
+					minPrice = prices.minOrNull(),
+					maxPrice = prices.maxOrNull()
+				)
+			} catch (e: Exception) {
+				null
+			}
+		}
+	}
+
+	@Tool
+	@LLMDescription("""
 		Obtains all hotels (stays) available in the system with detailed information about their location.
+
+		NOTE: For filtering by services or price, use searchHotelsWithFilters() instead.
+		This tool returns unfiltered results.
 
 		RETURNED INFORMATION:
 		- id: Unique ID of the hotel
@@ -94,6 +263,9 @@ class AgentTools(
 		- cityLongitude: Longitude of the city
 		- cityIsCapital: Whether it is in a capital city
 		- cityPopulation: Population of the city
+		- services: List of services/amenities the hotel offers
+		- minPrice:  Cheapest room price per night
+		- maxPrice: Most expensive room price per night
 
 		HOW TO USE THIS INFORMATION:
 		1. To filter by geographic location, use latitude/longitude
@@ -106,6 +278,7 @@ class AgentTools(
 		- User climate preferences
 		- Type of destination requested (beach, mountain, city, etc.)
 		- Season of the year based on date and hemisphere
+		- For filtered searches (by amenities, price, location), use searchHotelsWithFilters()
 		- Any other criteria mentioned by the user
 
 		IMPORTANT: When returning hotels to the user, you must provide:
@@ -117,30 +290,53 @@ class AgentTools(
 	""")
 	fun getAllHotels(): List<StayInfo> {
 		val pageable = PageRequest.of(0, 50)
-		return stayService.getAllStays(null, null, null, null, null, pageable). content.map { stay ->
-			val stayId = stay.id
-			val firstImage = if (stayId != null) {
-				try {
-					stayImageService. getAllStayImages()
-						.firstOrNull { it.stay?.id == stayId }
-						?.link
+		val stays = stayService.getAllStays(
+			companyId = null,
+			cityId = null,
+			serviceIds = null,
+			minPrice = null,
+			maxPrice = null,
+			pageable = pageable
+		)
+		return stays. content.mapNotNull { stay ->
+			try {
+				val stayId = stay.id
+				val firstImage = if (stayId != null) {
+					try {
+						stayImageService. getAllStayImages()
+							.firstOrNull { it.stay?.id == stayId }
+							?.link
+					} catch (e: Exception) {
+						null
+					}
+				} else null
+				val stayServices = stayServiceRepository.findByStayIdWithService(stay.id ?: 0)
+				val services = stayServices.map { it. service.name }
+				val prices = try {
+					stay.stayUnits.map { it.pricePerNight.toDouble() }
 				} catch (e: Exception) {
-					null
+					emptyList()
 				}
-			} else null
-			StayInfo(
-				id = stay.id ?: 0,
-				name = stay.name,
-				address = stay.address,
-				latitude = stay.latitude ?: stay.city?.latitude ?: 0.0,
-				longitude = stay.longitude ?: stay.city?.longitude ?: 0.0,
-				imageUrl = firstImage,
-				cityName = stay.city?. name ?: "N/A",
-				cityLatitude = stay.city?.latitude ?: 0.0,
-				cityLongitude = stay.city?.longitude ?: 0.0,
-				cityIsCapital = stay.city?.isCapital ?: false,
-				cityPopulation = stay.city?. population
-			)
+
+				StayInfo(
+					id = stay.id ?: 0,
+					name = stay.name,
+					address = stay.address,
+					latitude = stay.latitude,
+					longitude = stay.longitude,
+					imageUrl = firstImage,
+					cityName = stay.city.name,
+					cityLatitude = stay.city.latitude,
+					cityLongitude = stay. city.longitude,
+					cityIsCapital = stay.city.isCapital,
+					cityPopulation = stay.city.population,
+					services = services,
+					minPrice = prices.minOrNull(),
+					maxPrice = prices.maxOrNull()
+				)
+			} catch (e: Exception) {
+				null
+			}
 		}
 	}
 
@@ -187,6 +383,13 @@ class AgentTools(
 					null
 				}
 			} else null
+			val stayServices = stayServiceRepository.findByStayIdWithService(stay.id ?: 0)
+			val services = stayServices.map { it. service.name }
+			val prices = try {
+				stay.stayUnits.map { it.pricePerNight.toDouble() }
+			} catch (e: Exception) {
+				emptyList()
+			}
 			StayInfo(
 				id = stay.id ?: 0,
 				name = stay.name,
@@ -198,7 +401,10 @@ class AgentTools(
 				cityLatitude = stay.city?. latitude ?: 0.0,
 				cityLongitude = stay.city?.longitude ?: 0.0,
 				cityIsCapital = stay.city?.isCapital ?: false,
-				cityPopulation = stay.city?.population
+				cityPopulation = stay.city?.population,
+				services = services,
+				minPrice = prices.minOrNull(),
+				maxPrice = prices.maxOrNull()
 			)
 		}
 	}

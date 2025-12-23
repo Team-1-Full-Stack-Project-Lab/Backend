@@ -78,6 +78,8 @@ class AgentService(
 			tool(agentTools::getHotelsByCity)
 			tool(agentTools::getAllHotels)
 			tool(agentTools::getCurrentDate)
+			tool(agentTools::searchHotelsWithFilters)
+			tool(agentTools::getAvailableServices)
 		}
 	}
 
