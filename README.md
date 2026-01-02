@@ -263,8 +263,16 @@ The server will start at `http://localhost:8080`
 # Build image
 docker build -t travel-booking-backend .
 
-# Run container
-docker run -p 8080:8080 --env-file .env travel-booking-backend
+# Run container (uses default values from application.properties)
+docker run -p 8080:8080 travel-booking-backend
+
+# Or with custom environment variables
+docker run -p 8080:8080 \
+  -e DB_URL="jdbc:postgresql://host.docker.internal:5432/fullstack_project" \
+  -e DB_USERNAME="postgres" \
+  -e DB_PASSWORD="password" \
+  -e JWT_SECRET="production-secret-key" \
+  travel-booking-backend
 ```
 
 ## 💾 Database Setup
