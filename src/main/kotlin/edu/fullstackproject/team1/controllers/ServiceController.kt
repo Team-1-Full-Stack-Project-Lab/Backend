@@ -1,18 +1,16 @@
 package edu.fullstackproject.team1.controllers
 
-import edu.fullstackproject.team1.dtos.ServiceResponse
+import edu.fullstackproject.team1.dtos.responses.ServiceResponse
+import edu.fullstackproject.team1.mappers.ServiceMapper
 import edu.fullstackproject.team1.services.ServiceService
 import org.springframework.http.ResponseEntity
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestParam
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/services")
 class ServiceController(
 	private val serviceService: ServiceService,
+	private val serviceMapper: ServiceMapper,
 ) {
 	@GetMapping
 	fun getAllServices(
@@ -24,7 +22,7 @@ class ServiceController(
 			} else {
 				serviceService.getAllServices()
 			}
-		return ResponseEntity.ok(services)
+		return ResponseEntity.ok(serviceMapper.toResponseList(services))
 	}
 
 	@GetMapping("/{id}")
@@ -32,6 +30,6 @@ class ServiceController(
 		@PathVariable id: Long,
 	): ResponseEntity<ServiceResponse> {
 		val service = serviceService.getServiceById(id)
-		return ResponseEntity.ok(service)
+		return ResponseEntity.ok(serviceMapper.toResponse(service))
 	}
 }

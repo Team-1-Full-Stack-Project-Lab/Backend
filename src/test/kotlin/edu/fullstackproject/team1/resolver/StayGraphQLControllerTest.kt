@@ -2,7 +2,7 @@ package edu.fullstackproject.team1.resolver
 
 import com.ninjasquad.springmockk.MockkBean
 import edu.fullstackproject.team1.config.GraphQLScalarConfig
-import edu.fullstackproject.team1.dtos.CityResponse
+import edu.fullstackproject.team1.dtos.responses.CityResponse
 import edu.fullstackproject.team1.dtos.ServiceResponse
 import edu.fullstackproject.team1.dtos.StayResponse
 import edu.fullstackproject.team1.dtos.StayTypeResponse

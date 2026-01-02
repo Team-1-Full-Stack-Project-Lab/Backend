@@ -1,9 +1,46 @@
-.gradle
-build
-out
-.git
-.gitignore
-Dockerfile
-README.md
+# Build artifacts
+.gradle/
+build/
+target/
+out/
+bin/
+
+# IDE files
+.idea/
+.vscode/
 *.iml
-.vscode
+*.iws
+*.ipr
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+
+# Documentation
+README.md
+readmes/
+*.md
+
+# Docker
+Dockerfile
+docker-compose.yml
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+logs/
+
+# Testing
+.gradle-test-kit/
+
+# Gradle wrapper jar (we copy it explicitly)
+!gradle/wrapper/gradle-wrapper.jar
+

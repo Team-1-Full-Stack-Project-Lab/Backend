@@ -18,4 +18,6 @@ interface StayServiceRepository : JpaRepository<StayService, Long> {
 	fun findByStayIdWithService(
 		@Param("stayId") stayId: Long,
 	): List<StayService>
+
+	fun deleteByStayId(stayId: Long)
 }

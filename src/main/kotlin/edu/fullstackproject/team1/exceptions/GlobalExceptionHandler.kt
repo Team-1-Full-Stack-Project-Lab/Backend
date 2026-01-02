@@ -8,6 +8,7 @@ import org.springframework.validation.FieldError
 import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
+import org.springframework.web.server.ResponseStatusException
 import java.time.Instant
 
 @RestControllerAdvice
@@ -35,6 +36,25 @@ class GlobalExceptionHandler {
 			)
 
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorResponse)
+	}
+
+	@ExceptionHandler(ResponseStatusException::class)
+	fun handleResponseStatusException(
+		ex: ResponseStatusException,
+		request: HttpServletRequest,
+	): ResponseEntity<ErrorResponse> {
+		val statusCode = ex.statusCode.value()
+		val reasonPhrase = HttpStatus.resolve(statusCode)?.reasonPhrase ?: ex.statusCode.toString()
+		val errorResponse =
+			ErrorResponse(
+				timestamp = Instant.now(),
+				status = statusCode,
+				error = reasonPhrase,
+				message = ex.reason ?: "An error occurred",
+				path = request.requestURI,
+			)
+
+		return ResponseEntity.status(ex.statusCode).body(errorResponse)
 	}
 
 	@ExceptionHandler(Exception::class)

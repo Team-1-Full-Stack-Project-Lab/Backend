@@ -27,10 +27,30 @@ class SecurityConfig(
 			.addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter::class.java)
 			.authorizeHttpRequests { requests ->
 				requests
-					.requestMatchers("/user/profile/**", "/trips/itineraries/**")
+					.requestMatchers(
+						"/api/user/profile/**",
+						"/api/trips/itineraries/**",
+						"/api/companies/**",
+					)
 					.authenticated()
-					.requestMatchers("/graphql", "/graphiql/**")
-					.permitAll()
+					.requestMatchers(
+						org.springframework.http.HttpMethod.POST,
+						"/api/stays",
+						"/api/stay-units",
+					)
+					.authenticated()
+					.requestMatchers(
+						org.springframework.http.HttpMethod.PUT,
+						"/api/stays/**",
+						"/api/stay-units/**",
+					)
+					.authenticated()
+					.requestMatchers(
+						org.springframework.http.HttpMethod.DELETE,
+						"/api/stays/**",
+						"/api/stay-units/**",
+					)
+					.authenticated()
 					.anyRequest()
 					.permitAll()
 			}.build()

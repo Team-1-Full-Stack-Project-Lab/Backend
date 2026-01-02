@@ -15,6 +15,18 @@ interface TripStayUnitRepository : JpaRepository<TripStayUnit, TripStayUnitId> {
 
 	@Query(
 		"""
+		SELECT tsu FROM TripStayUnit tsu
+		JOIN FETCH tsu.stayUnit su
+		JOIN FETCH tsu.trip t
+		JOIN FETCH t.city c
+		JOIN FETCH c.country
+		WHERE tsu.trip.id = :tripId
+	"""
+	)
+	fun findByTripIdWithRelations(tripId: Long): List<TripStayUnit>
+
+	@Query(
+		"""
         SELECT CASE WHEN COUNT(tsu) > 0 THEN true ELSE false END
         FROM TripStayUnit tsu
         WHERE tsu.stayUnit.id = :stayUnitId

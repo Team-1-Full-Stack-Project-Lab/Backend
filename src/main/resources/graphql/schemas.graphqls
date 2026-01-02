@@ -19,7 +19,7 @@ type Country {
 	id: ID!
 	name: String!
 	iso2Code: String!
-	iso3Code: String!
+	iso3Code: String
 	phoneCode: String
 	currencyCode: String
 	currencySymbol: String
@@ -39,6 +39,7 @@ type Region {
 	id: ID!
 	name: String!
 	code: String
+	countries: [Country!]
 }
 
 #PAGINATION RESPONSE
@@ -67,9 +68,24 @@ type User {
 	email: String!
 	firstName: String!
 	lastName: String!
+	company: Company
+}
+
+#COMPANY TYPES
+type Company {
+	id: ID!
+	userId: ID!
+	name: String!
+	email: String!
+	phone: String
+	description: String
+	createdAt: String!
+	updatedAt: String!
+	user: User
+	stays: [Stay!]
 }
 #USER INPUT TYPES
-input UserUpdateRequestGraphQL {
+input UserUpdateRequest {
 	firstName: String!
 	lastName: String!
 }
@@ -83,32 +99,35 @@ input RegisterRequest {
 	lastName: String!
 	password: String!
 }
+
+#COMPANY INPUT TYPES
+input CompanyCreateRequest {
+	name: String!
+	email: String!
+	phone: String
+	description: String
+}
+input CompanyUpdateRequest {
+	name: String
+	email: String
+	phone: String
+	description: String
+}
 #AUTH TYPES
 type Auth {
 	token: String!
-}
-type DeleteUserResponse {
-	success: Boolean!
-	message: String!
 }
 
 #TRIPS TYPES AND RESPONSES
 type Trip {
 	id: ID!
 	name: String!
-	cityId: ID!
-	cityName: String!
-	countryName: String!
+	city: City!
+	country: Country!
 	startDate: Date!
-	finishDate: Date!
+	endDate: Date!
 }
-type TripsList {
-	trips: [Trip!]!
-}
-type DeleteItineraryResponse {
-	success: Boolean!
-	message: String!
-}
+
 #TRIPS INPUTS
 input CreateTripRequest {
 	cityId: ID!
@@ -130,19 +149,16 @@ type Stay {
 	address: String!
 	latitude: Float!
 	longitude: Float!
+	description: String
 	city: City
 	stayType: StayType
-	services: [StayService!]
+	services: [Service!]
 	units: [StayUnit!]
+	images: [StayImage!]
 }
 type StayType {
 	id: ID!
 	name: String!
-}
-type StayService {
-	id: ID!
-	name: String!
-	icon: String
 }
 type StayUnit {
 	id: ID!
@@ -154,6 +170,65 @@ type StayUnit {
 	stay: Stay
 }
 
+#SERVICE TYPE
+type Service {
+	id: ID!
+	name: String!
+	icon: String
+}
+
+#STAY IMAGES
+type StayImage {
+	id: ID!
+	link: String!
+	stay: Stay
+}
+input CreateStayImageRequest {
+	link: String!
+	stayId: Int!
+}
+
+#STAY INPUTS
+input StayCreateRequest {
+	cityId: ID!
+	stayTypeId: ID!
+	name: String!
+	address: String!
+	latitude: Float!
+	longitude: Float!
+	description: String
+	serviceIds: [ID!]
+	imageUrls: [String!]
+}
+input StayUpdateRequest {
+	cityId: ID
+	stayTypeId: ID
+	name: String
+	address: String
+	latitude: Float
+	longitude: Float
+	description: String
+	serviceIds: [ID!]
+	imageUrls: [String!]
+}
+
+#STAY UNIT INPUTS
+input StayUnitCreateRequest {
+	stayId: ID!
+	stayNumber: String!
+	numberOfBeds: Int!
+	capacity: Int!
+	pricePerNight: Float!
+	roomType: String!
+}
+input StayUnitUpdateRequest {
+	stayNumber: String
+	numberOfBeds: Int
+	capacity: Int
+	pricePerNight: Float
+	roomType: String
+}
+
 #TRIP STAY UNIT TYPES AND RESPONSES
 type TripStayUnit {
 	trip: Trip
@@ -161,18 +236,36 @@ type TripStayUnit {
 	startDate: Date!
 	endDate: Date!
 }
-type TripStayUnitsList {
-	tripStayUnits: [TripStayUnit!]!
-}
-type RemoveStayUnitResponse {
-	success: Boolean!
-	message: String!
-}
 #TRIP STAY UNIT INPUTS
-input AddStayUnitRequest {
+input AddStayUnitToTripRequest {
 	stayUnitId: ID!
 	startDate: Date!
 	endDate: Date!
+}
+
+#EMPTY RESULT TYPE
+type EmptyResult {
+	_empty: String
+}
+
+#AGENT TYPES
+type HotelData{
+	id: ID!
+	name: String!
+	address: String!
+	latitude: Float!
+	longitude: Float!
+	imageUrl: String
+}
+type ChatResponse{
+	response: String!
+	sessionId: String!
+	hotels:[HotelData]
+}
+type ConversationMessage{
+	role: String!
+	content: String!
+	timestamp: Float!
 }
 
 #QUERIES
@@ -198,12 +291,15 @@ type Query {
 	getRegions(name: String): [Region!]!
 	#User queries
 	getUser: User!
+	#Company queries
+	getCompanyById(id: ID!): Company
+	getAllCompanies: [Company!]!
 	#Trip queries
-	getUserItineraries: TripsList!
-	getItineraryStayUnits(tripId: ID!): TripStayUnitsList!
+	getUserItineraries: [Trip!]!
+	getItineraryStayUnits(id: ID!): [TripStayUnit!]!
 	#Stay queries
 	getStayById(id: ID!): Stay
-	getAllStays(page: Int, size: Int): StayPage!
+	getAllStays(cityId: ID, serviceIds: [ID!], minPrice: Float, maxPrice: Float, page: Int, size: Int): StayPage!
 	getStaysByCity(cityId: ID!, page: Int, size: Int): StayPage!
 	searchStaysNearby(
 		latitude: Float!
@@ -212,12 +308,14 @@ type Query {
 		page: Int
 		size: Int
 	): StayPage!
+	#StayImage queries
+	getAllStayImages: [StayImage!]!
 	#StayType queries
 	getStayTypeById(id: ID!): StayType
 	getAllStayTypes(name: String): [StayType!]!
 	#Service queries
-	getServiceById(id: ID!): StayService
-	getAllServices(name: String): [StayService!]!
+	getServiceById(id: ID!): Service
+	getAllServices(name: String): [Service!]!
 	#StayUnit queries
 	getStayUnitById(id: ID!): StayUnit
 	getStayUnitsByStayId(stayId: ID!): [StayUnit!]!
@@ -226,6 +324,8 @@ type Query {
 		minCapacity: Int!
 		maxPrice: Float!
 	): [StayUnit!]!
+	#Agent queries
+	getSessionHistory(sessionId: String!): [ConversationMessage!]!
 }
 #MUTATIONS
 type Mutation {
@@ -233,18 +333,30 @@ type Mutation {
 	login(request: LoginRequest!): Auth!
 	register(request: RegisterRequest!): Auth!
 	#User mutations
-	updateUser(request: UserUpdateRequestGraphQL!): User!
-	deleteUser: DeleteUserResponse!
+	updateUser(request: UserUpdateRequest!): User!
+	deleteUser: EmptyResult!
+	#Company mutations
+	createCompany(request: CompanyCreateRequest!): Company!
+	updateCompany(id: ID!, request: CompanyUpdateRequest!): Company!
+	deleteCompany(id: ID!): EmptyResult!
 	#Trip mutations
 	createItinerary(request: CreateTripRequest!): Trip!
 	updateItinerary(id: ID!, request: UpdateTripRequest!): Trip!
-	deleteItinerary(id: ID!): DeleteItineraryResponse!
-	addStayUnitToItinerary(
-		tripId: ID!
-		request: AddStayUnitRequest!
-	): TripStayUnit!
-	removeStayUnitFromItinerary(
-		tripId: ID!
-		stayUnitId: ID!
-	): RemoveStayUnitResponse!
+	deleteItinerary(id: ID!): EmptyResult!
+	addStayUnitToItinerary(id: ID!, request: AddStayUnitToTripRequest!): TripStayUnit!
+	removeStayUnitFromItinerary(tripId: ID!, stayUnitId: ID!): EmptyResult!
+	#Stay mutations
+	createStay(request: StayCreateRequest!): Stay!
+	updateStay(id: ID!, request: StayUpdateRequest!): Stay!
+	deleteStay(id: ID!): Boolean!
+	#StayUnit mutations
+	createStayUnit(request: StayUnitCreateRequest!): StayUnit!
+	updateStayUnit(id: ID!, request: StayUnitUpdateRequest!): StayUnit!
+	deleteStayUnit(id: ID!): Boolean!
+	#StayImage mutations
+	createStayImage(request: CreateStayImageRequest!): StayImage!
+	deleteStayImage(id: ID!): EmptyResult!
+	#Agent mutations
+	chatWithAgent(message: String!, sessionId: String): ChatResponse!
+	clearSession(sessionId: String!): Boolean!
 }

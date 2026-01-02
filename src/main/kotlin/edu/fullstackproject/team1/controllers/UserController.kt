@@ -1,7 +1,8 @@
 package edu.fullstackproject.team1.controllers
 
-import edu.fullstackproject.team1.dtos.UserResponse
-import edu.fullstackproject.team1.dtos.UserUpdateRequest
+import edu.fullstackproject.team1.dtos.requests.UserUpdateRequest
+import edu.fullstackproject.team1.dtos.responses.UserResponse
+import edu.fullstackproject.team1.mappers.UserMapper
 import edu.fullstackproject.team1.services.UserService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Content
@@ -13,12 +14,7 @@ import io.swagger.v3.oas.annotations.tags.Tag
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.annotation.AuthenticationPrincipal
 import org.springframework.security.core.userdetails.UserDetails
-import org.springframework.web.bind.annotation.DeleteMapping
-import org.springframework.web.bind.annotation.GetMapping
-import org.springframework.web.bind.annotation.PutMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/user")
@@ -26,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController
 @SecurityRequirement(name = "Bearer Authentication")
 class UserController(
 	private val userService: UserService,
+	private val userMapper: UserMapper,
 ) {
 	@GetMapping("/profile")
 	@Operation(
@@ -59,9 +56,9 @@ class UserController(
 	fun getUser(
 		@AuthenticationPrincipal user: UserDetails,
 	): ResponseEntity<UserResponse> {
-		val response = userService.getUserByEmail(user.username)
+		val user = userService.getUserByEmail(user.username)
 
-		return ResponseEntity.ok(response)
+		return ResponseEntity.ok(userMapper.toResponse(user, includeRelations = true))
 	}
 
 	@PutMapping("/profile")
@@ -102,9 +99,9 @@ class UserController(
 		@AuthenticationPrincipal user: UserDetails,
 		@RequestBody request: UserUpdateRequest,
 	): ResponseEntity<UserResponse> {
-		val response = userService.updateUser(user.username, request.firstName, request.lastName)
+		val user = userService.updateUser(user.username, request.toCommand())
 
-		return ResponseEntity.ok(response)
+		return ResponseEntity.ok(userMapper.toResponse(user, includeRelations = true))
 	}
 
 	@DeleteMapping("/profile")

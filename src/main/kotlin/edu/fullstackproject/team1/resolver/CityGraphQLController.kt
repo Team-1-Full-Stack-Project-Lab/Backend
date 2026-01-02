@@ -1,6 +1,7 @@
 package edu.fullstackproject.team1.resolver
 
-import edu.fullstackproject.team1.dtos.CityResponse
+import edu.fullstackproject.team1.dtos.responses.CityResponse
+import edu.fullstackproject.team1.mappers.CityMapper
 import edu.fullstackproject.team1.services.CityService
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
@@ -11,11 +12,15 @@ import org.springframework.stereotype.Controller
 @Controller
 class CityGraphQLController(
 	private val cityService: CityService,
+	private val cityMapper: CityMapper,
 ) {
 	@QueryMapping
 	fun getCityById(
 		@Argument id: Long,
-	): CityResponse? = cityService.getCityById(id)
+	): CityResponse {
+		val city = cityService.getCityById(id)
+		return cityMapper.toResponse(city, true)
+	}
 
 	@QueryMapping
 	fun getAllCities(
@@ -23,14 +28,16 @@ class CityGraphQLController(
 		@Argument country: Long?,
 		@Argument state: Long?,
 		@Argument featured: Boolean?,
-		@Argument page: Int?,
-		@Argument size: Int?,
+		@Argument page: Int = 0,
+		@Argument size: Int = 20,
 	): Page<CityResponse> {
-		val paginable = PageRequest.of(page ?: 0, size ?: 20)
-		return if (name != null || country != null || state != null || featured != null) {
-			cityService.searchCities(country, state, name, featured, paginable)
-		} else {
-			cityService.getAllCities(paginable)
-		}
+		val paginable = PageRequest.of(page, size)
+		val cities =
+			if (name != null || country != null || state != null || featured != null) {
+				cityService.searchCities(country, state, name, featured, paginable)
+			} else {
+				cityService.getAllCities(paginable)
+			}
+		return cityMapper.toResponsePage(cities, true)
 	}
 }
