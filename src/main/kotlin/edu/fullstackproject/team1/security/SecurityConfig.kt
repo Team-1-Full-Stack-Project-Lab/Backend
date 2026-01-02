@@ -28,27 +28,27 @@ class SecurityConfig(
 			.authorizeHttpRequests { requests ->
 				requests
 					.requestMatchers(
-						"/user/profile/**",
-						"/trips/itineraries/**",
-						"/companies/**",
+						"/api/user/profile/**",
+						"/api/trips/itineraries/**",
+						"/api/companies/**",
 					)
 					.authenticated()
 					.requestMatchers(
 						org.springframework.http.HttpMethod.POST,
-						"/stays",
-						"/stay-units",
+						"/api/stays",
+						"/api/stay-units",
 					)
 					.authenticated()
 					.requestMatchers(
 						org.springframework.http.HttpMethod.PUT,
-						"/stays/**",
-						"/stay-units/**",
+						"/api/stays/**",
+						"/api/stay-units/**",
 					)
 					.authenticated()
 					.requestMatchers(
 						org.springframework.http.HttpMethod.DELETE,
-						"/stays/**",
-						"/stay-units/**",
+						"/api/stays/**",
+						"/api/stay-units/**",
 					)
 					.authenticated()
 					.anyRequest()
