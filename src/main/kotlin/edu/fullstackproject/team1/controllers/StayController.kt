@@ -317,4 +317,28 @@ class StayController(
 		stayService.deleteStay(user.username, id)
 		return ResponseEntity.noContent().build()
 	}
+
+	@GetMapping("/popular")
+	@Operation(
+		summary = "Get popular stays",
+		description = "Retrieve the most popular stays based on how many times they have been saved in user itineraries.  Returns up to 6 stays, prioritizing those most frequently saved, and filling with random recommendations if needed."
+	)
+	@ApiResponses(
+		value = [
+			ApiResponse(
+				responseCode = "200",
+				description = "Popular stays retrieved successfully",
+				content = [
+					Content(
+						schema = Schema(implementation = StayResponse::class)
+					)
+				]
+			)
+		]
+	)
+	fun getPopularStays(): ResponseEntity<List<StayResponse>> {
+		val stays = stayService.getPopularStays(6)
+		val responses = stays.map { stay -> stayMapper.toResponse(stay, true) }
+		return ResponseEntity. ok(responses)
+	}
 }

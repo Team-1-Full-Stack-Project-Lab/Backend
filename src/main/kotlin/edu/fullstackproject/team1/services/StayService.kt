@@ -8,6 +8,7 @@ import edu.fullstackproject.team1.models.StayImage
 import edu.fullstackproject.team1.models.StayService
 import edu.fullstackproject.team1.repositories.*
 import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
@@ -183,5 +184,76 @@ class StayService(
 		}
 
 		stayRepository.delete(stay)
+	}
+
+	fun getPopularStays(limit: Int = 6): List<Stay> {
+		try {
+			val popularStayData = stayRepository.findMostPopularStayIds()
+
+			if (popularStayData.isEmpty()) {
+				val fallbackStays = stayRepository.findAllWithCityAndType(PageRequest.of(0, limit))
+				return fallbackStays.content.take(limit)
+			}
+
+			val popularStayWithCounts = popularStayData.mapNotNull { row ->
+				val stayId = when (val id = row[0]) {
+					is Long -> id
+					is Int -> id.toLong()
+					is java.math.BigInteger -> id.toLong()
+					is java.math.BigDecimal -> id.toLong()
+					else -> null
+				}
+				val tripCount = when (val count = row[1]) {
+					is Long -> count
+					is Int -> count.toLong()
+					is java.math.BigInteger -> count.toLong()
+					is java.math.BigDecimal -> count.toLong()
+					else -> 0L
+				}
+
+				if (stayId != null) {
+					Pair(stayId, tripCount)
+				} else {
+					null
+				}
+			}.take(limit)
+
+			val popularStayIds = popularStayWithCounts.map { it.first }
+
+			if (popularStayIds.isEmpty()) {
+				val fallbackStays = stayRepository.findAllWithCityAndType(PageRequest.of(0, limit))
+				return fallbackStays.content.take(limit)
+			}
+
+			if (popularStayIds.size >= limit) {
+				val stays = stayRepository.findByIdsWithRelations(popularStayIds)
+				return popularStayIds.mapNotNull { id ->
+					stays.find { it.id == id }
+				}
+			}
+
+			val allStays = stayRepository.findAllWithCityAndType(PageRequest.of(0, limit * 2))
+			val allStayIds = allStays.content.mapNotNull { it.id }
+
+			if (allStayIds. isEmpty()) {
+				return emptyList()
+			}
+
+			val remainingCount = limit - popularStayIds.size
+			val availableIds = allStayIds.filterNot { it in popularStayIds }
+			val fillerStayIds = availableIds.take(remainingCount)
+			val combinedIds = popularStayIds + fillerStayIds
+
+			if (combinedIds.isEmpty()) {
+				return emptyList()
+			}
+
+			val stays = stayRepository.findByIdsWithRelations(combinedIds)
+			return combinedIds. mapNotNull { id -> stays.find { it.id == id } }
+
+		} catch (e: Exception) {
+			val fallbackStays = stayRepository.findAllWithCityAndType(PageRequest.of(0, limit))
+			return fallbackStays.content.take(limit)
+		}
 	}
 }
