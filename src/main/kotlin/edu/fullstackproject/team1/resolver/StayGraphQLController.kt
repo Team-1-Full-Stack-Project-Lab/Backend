@@ -91,4 +91,12 @@ class StayGraphQLController(
 		stayService.deleteStay(user.username, id)
 		return true
 	}
+
+	@QueryMapping
+	fun getPopularStays(
+		@Argument(name = "limit") limit: Int = 6
+	): List<StayResponse> {
+		val stays = stayService.getPopularStays(limit)
+		return stays.map { stay -> stayMapper.toResponse(stay, true) }
+	}
 }
