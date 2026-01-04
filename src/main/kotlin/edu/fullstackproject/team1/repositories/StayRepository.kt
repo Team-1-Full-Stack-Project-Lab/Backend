@@ -137,4 +137,28 @@ interface StayRepository : JpaRepository<Stay, Long> {
 		@Param("maxPrice") maxPrice: Double?,
 		pageable: Pageable
 	): Page<Stay>
+
+	@Query(
+		"""
+	SELECT DISTINCT s FROM Stay s
+	LEFT JOIN FETCH s.city c
+	LEFT JOIN FETCH s.stayType st
+	LEFT JOIN FETCH s.company comp
+	WHERE s.id IN :stayIds
+	ORDER BY s.id ASC
+	"""
+	)
+	fun findByIdsWithRelations(@Param("stayIds") stayIds: List<Long>): List<Stay>
+
+	@Query(
+		nativeQuery = true,
+		value = """
+		SELECT su.stay_id, COUNT(DISTINCT tsu.trip_id) as trip_count
+		FROM trips_stay_units tsu
+		JOIN stay_units su ON tsu.stay_unit_id = su.id
+		GROUP BY su.stay_id
+		ORDER BY trip_count DESC, su.stay_id ASC
+	"""
+	)
+	fun findMostPopularStayIds(): List<Array<Any>>
 }

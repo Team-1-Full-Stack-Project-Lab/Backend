@@ -308,6 +308,7 @@ type Query {
 		page: Int
 		size: Int
 	): StayPage!
+	getPopularStays(limit: Int!): [Stay!]!
 	#StayImage queries
 	getAllStayImages: [StayImage!]!
 	#StayType queries
