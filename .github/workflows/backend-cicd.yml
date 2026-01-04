@@ -1,0 +1,53 @@
+name: Backend CI/CD
+
+on:
+    push:
+        branches: [main, develop]
+    pull_request:
+        branches: [main, develop]
+
+jobs:
+    # Job 1: Build and Test
+    build:
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Set up JDK 21
+              uses: actions/setup-java@v4
+              with:
+                  java-version: "21"
+                  distribution: "temurin"
+                  cache: "gradle"
+
+            - name: Grant execute permission for gradlew
+              run: chmod +x gradlew
+
+            - name: Build with Gradle
+              run: ./gradlew build -x test
+
+            - name: Run tests
+              run: ./gradlew test
+
+    # Job 2: Deploy to Production (only on main branch)
+    deploy:
+        needs: build
+        runs-on: ubuntu-latest
+        if: github.ref == 'refs/heads/main'
+
+        steps:
+            - name: Deploy to Azure VM
+              uses: appleboy/ssh-action@v1.0.3
+              with:
+                  host: ${{ secrets.SSH_HOST }}
+                  username: ${{ secrets.SSH_USER }}
+                  key: ${{ secrets.SSH_PRIVATE_KEY }}
+                  script: |
+                      cd /opt/fullstack-project/Backend
+                      git pull origin main
+                      cd /opt/fullstack-project
+                      docker compose up -d --build backend
+                      docker compose ps
+                      echo "✅ Backend deployed successfully"
