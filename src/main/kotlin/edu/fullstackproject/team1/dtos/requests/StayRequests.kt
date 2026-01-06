@@ -2,6 +2,8 @@ package edu.fullstackproject.team1.dtos.requests
 
 import edu.fullstackproject.team1.dtos.commands.StayCreateCommand
 import edu.fullstackproject.team1.dtos.commands.StayUpdateCommand
+import jakarta.validation.constraints.Max
+import jakarta.validation.constraints.Min
 import jakarta.validation.constraints.NotBlank
 import jakarta.validation.constraints.NotNull
 import jakarta.validation.constraints.Size
@@ -22,9 +24,13 @@ data class StayCreateRequest(
 	val address: String?,
 
 	@field:NotNull(message = "Latitude is required")
+	@field:Min(value = -90, message = "Latitude must be greater than or equal to -90")
+	@field:Max(value = 90, message = "Latitude must be less than or equal to 90")
 	val latitude: Double?,
 
 	@field:NotNull(message = "Longitude is required")
+	@field:Min(value = -180, message = "Longitude must be greater than or equal to -180")
+	@field:Max(value = 180, message = "Longitude must be less than or equal to 180")
 	val longitude: Double?,
 
 	val description: String? = null,
@@ -57,8 +63,12 @@ data class StayUpdateRequest(
 	@field:Size(max = 500, message = "Address must not exceed 500 characters")
 	val address: String? = null,
 
+	@field:Min(value = -90, message = "Latitude must be greater than or equal to -90")
+	@field:Max(value = 90, message = "Latitude must be less than or equal to 90")
 	val latitude: Double? = null,
 
+	@field:Min(value = -180, message = "Longitude must be greater than or equal to -180")
+	@field:Max(value = 180, message = "Longitude must be less than or equal to 180")
 	val longitude: Double? = null,
 
 	val description: String? = null,
